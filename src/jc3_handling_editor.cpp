@@ -392,9 +392,7 @@ void HookJC3Present() {
                     ImGui::BulletText("Top Speed %f", pfxCar->topSpeedKph);
                     ImGui::Separator();
 
-                    ImGui::DragFloat("Top Speed", (float*)((char*)pfxVehicle + 0x5FC));
-                    ImGui::DragFloat("Official Top Speed", (float*)((char*)pfxVehicle + 0x3EC));
-                    ImGui::DragFloat("Current Top Speed", (float*)((char*)pfxVehicle + 0x3F0));
+                    ImGui::DragFloat("Top Speed", (float*)((char*)pfxVehicle + 0x3EC));
                   
                     ImGui::DragFloat("Drag Coefficient", &real_vehicle->DragCoefficient);
                     ImGui::DragFloat("Mass", &real_vehicle->Mass);
@@ -429,7 +427,7 @@ void HookJC3Present() {
 
                     if (ImGui::CollapsingHeader("Gravity Modifiers")) {
                         ImGui::TreePush("Gravity Modifiers");
-                        ImGui::DragFloat("Gravity Grounded", &pfxCar->someGravityModifiers->m_gravity_multiplier_grounded);
+                        ImGui::DragFloat("Gravity Grounded", &pfxCar->someGravityModifiers->gravityMultiplierGrounded);
                         ImGui::TreePop();
                     }
 
