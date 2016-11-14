@@ -1,3 +1,6 @@
 [submodule "deps/imgui"]
 	path = deps/imgui
 	url = ../../ocornut/imgui.git
+[submodule "deps/jc3_api"]
+	path = deps/jc3_api
+	url = ../jc3-api.git
