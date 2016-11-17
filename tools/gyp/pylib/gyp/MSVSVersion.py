@@ -244,7 +244,7 @@ def _CreateVersion(name, path, sdk_based=False):
                                   uses_vcxproj=True,
                                   path=path,
                                   sdk_based=sdk_based,
-                                  default_toolset='v140'),
+                                  default_toolset='v141'),
       '2013': VisualStudioVersion('2013',
                                   'Visual Studio 2013',
                                   solution_version='13.00',

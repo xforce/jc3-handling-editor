@@ -4,3 +4,9 @@
 [submodule "deps/jc3_api"]
 	path = deps/jc3_api
 	url = ../jc3-api.git
+[submodule "deps/json"]
+	path = deps/json
+	url = ../../nlohmann/json.git
+[submodule "deps/ksignals"]
+	path = deps/ksignals
+	url = ../ksignals.git
