@@ -94,7 +94,6 @@ HRESULT _D3D11CreateDevice(_In_opt_ IDXGIAdapter *pAdapter,
 
 	HWND focusWindow = FindTopWindow(GetCurrentProcessId());// FindWindowA(D3D11Hook::instance()->GetWindowClassName().c_str(), NULL);
 	events.on_d3d11_initialized(focusWindow, *ppDevice, *ppImmediateContext);
-
 	return hr;
 }
 
