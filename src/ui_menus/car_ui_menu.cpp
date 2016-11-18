@@ -1,7 +1,7 @@
 #include "../deps/imgui/imgui.h"
 
-#include <jc3/entities/CCharacter.h>
-#include <jc3/entities/CVehicle.h>
+#include <jc3/entities/character.h>
+#include <jc3/entities/vehicle.h>
 
 void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
 	// Car stuff

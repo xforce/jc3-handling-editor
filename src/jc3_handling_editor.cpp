@@ -21,9 +21,9 @@
 
 #include <d3dcompiler.h>
 
-#include <jc3/entities/CCharacter.h>
-#include <jc3/entities/CVehicle.h>
-#include <jc3/ui/overlayui.h>
+#include <jc3/entities/character.h>
+#include <jc3/entities/vehicle.h>
+#include <jc3/ui/overlay_ui.h>
 
 namespace fs = std::experimental::filesystem;
 
