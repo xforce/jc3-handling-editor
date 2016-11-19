@@ -3,9 +3,55 @@
 #include <jc3/entities/character.h>
 #include <jc3/entities/vehicle.h>
 
+#include <json.hpp>
+
+#include <jc3/hashes/vehicles.h>
+
+struct JCString
+{
+	union _Bxty {
+		char _Buf[16];
+		char *_Ptr;
+		char _Alias[16];
+	} _Bx;
+
+	unsigned __int64 _Mysize;
+	unsigned __int64 _Myres;
+	std::allocator<char> _Alval;
+
+	const char* c_str() {
+		if (_Myres >= 0x10) {
+			return _Bx._Ptr;
+		}
+		return _Bx._Buf;
+	}
+};
+
+struct SProfileItemInfo
+{
+	char pad[0x18];
+	JCString m_UIName;
+};
+
 void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
-	// Car stuff
+
 	auto pfxCar = static_cast<jc3::CPfxCar*>(pfxVehicle);
+
+	using json = nlohmann::json;
+	static json vehicle_hashes = json::parse(jc3::vehicle_hashes);
+	assert(vehicle_hashes.is_array() && "Vehicle hashes is not an array");
+
+
+	// Car stuff
+	auto hash = real_vehicle->GetNameHash();
+
+	for (auto &vehicle : vehicle_hashes) {
+		if (vehicle["hash"].is_number() && static_cast<uint32_t>(vehicle["hash"]) == hash) {
+			std::string t = vehicle["model_name"];
+			ImGui::BulletText("Model Name: %s", t.c_str());
+		}
+	}
+	
 	ImGui::BulletText("Engine Torque %f", pfxCar->engineTorque);
 	ImGui::BulletText("Engine RPM %f", pfxCar->engineRPM);
 	ImGui::BulletText("Top Speed %f", pfxCar->topSpeedKph);

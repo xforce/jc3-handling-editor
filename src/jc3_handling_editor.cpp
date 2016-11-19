@@ -6,6 +6,8 @@
 #include <chrono>
 #include <thread>
 #include <filesystem>
+#include <string>
+#include <unordered_map>
 
 #include "d3d11_hook.h"
 
@@ -31,39 +33,41 @@ namespace fs = std::experimental::filesystem;
 
 WNDPROC g_originalWndProc = NULL;
 
-std::wstring ThisDllDirPath()
+std::unordered_map<std::string, std::vector<std::string>> g_profiles;
+
+std::string ThisDllDirPath()
 {
-    std::wstring thisPath = L"";
-    WCHAR path[MAX_PATH];
+    std::string thisPath = "";
+    char path[MAX_PATH];
     HMODULE hm;
     if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
         GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
         (LPWSTR)&ThisDllDirPath, &hm))
 
-    GetModuleFileNameW(hm, path, sizeof(path));
-    PathRemoveFileSpecW(path);
-    thisPath = std::wstring(path);
+    GetModuleFileNameA(hm, path, sizeof(path));
+    PathRemoveFileSpecA(path);
+    thisPath = std::string(path);
     if (!thisPath.empty() &&
         thisPath.at(thisPath.length() - 1) != '\\')
-        thisPath += L"\\";
+        thisPath += "\\";
 
     return thisPath;
 }
 
-std::wstring GetProfilesSavePath() {
+std::string GetProfilesSavePath() {
     auto savePath = fs::path(ThisDllDirPath()).append("profiles");
     if (!fs::exists(savePath)) {
         fs::create_directories(savePath);
     }
-    return savePath;
+    return savePath.string();
 }
 
-std::wstring GetProfileSavePath(std::wstring subDir) {
+std::string GetProfileSavePath(std::string subDir) {
     auto savePath = fs::path(GetProfilesSavePath()).append(subDir);
     if (!fs::exists(savePath)) {
         fs::create_directories(savePath);
     }
-    return savePath;
+    return savePath.string();
 }
 
 static bool overlayState = false;
@@ -116,6 +120,51 @@ int32_t hook_GetSystemMetrics(int32_t index) {
     return FALSE;
 }
 
+
+namespace ImGui
+{
+	static auto vector_getter = [](void* vec, int idx, const char** out_text)
+	{
+		auto& vector = *static_cast<std::vector<std::string>*>(vec);
+		if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+		*out_text = vector.at(idx).c_str();
+		return true;
+	};
+
+	bool Combo(const char* label, int* currIndex, std::vector<std::string>& values)
+	{
+		if (values.empty()) { return false; }
+		return Combo(label, currIndex, vector_getter,
+			static_cast<void*>(&values), static_cast<int>(values.size()));
+	}
+
+	bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values)
+	{
+		if (values.empty()) { return false; }
+		return ListBox(label, currIndex, vector_getter,
+			static_cast<void*>(&values), static_cast<int>(values.size()));
+	}
+
+}
+
+#include <jc3/hashes/vehicles.h>
+#include <json.hpp>
+
+struct VehicleUIItem
+{
+	int profileIndex = 0;
+	std::string modelName;
+	void Reset() {
+		profileIndex = 0;
+		modelName.clear();
+	}
+};
+
+static VehicleUIItem currentVehicleItem;
+
+jc3::CGameObject * lastVehicle = nullptr;
+
+#define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
 void SetupImGuiStyle2();
 void HookZwSetInformationThread();
@@ -129,9 +178,19 @@ BOOL WINAPI DllMain(
 
         // Load all profiles
         for (auto &p : fs::directory_iterator(GetProfilesSavePath())) {
+			if (fs::is_directory(p.path())) {
+				auto &m = g_profiles[p.path().filename().string()];
+				for (auto &f : fs::directory_iterator(p)) {
+					if (f.path().extension() == ".json") {
+						auto pp = f.path();
+						auto mm = pp.replace_extension("");
+						m.push_back(mm.filename().string());
+					}
+				}
+			}
         }
 
-        std::ofstream meowf(fs::path(GetProfileSavePath(L"TestVehicle")).append("test.json"));
+        std::ofstream meowf(fs::path(GetProfileSavePath("TestVehicle")).append("test.json"));
         meowf << "Hello";
         meowf.close();
 
@@ -159,8 +218,92 @@ BOOL WINAPI DllMain(
 			if (overlayState) {
 				if (jc3::CCharacter::GetLocalPlayerCharacter()) {
 					auto vehicle = jc3::CCharacter::GetLocalPlayerCharacter()->GetVehicle();
+
+					// We don't want it to reset if you get out of the current vehicle and then get back into the same vehicle
+					// TOOD(xforce): Improve this so it stores it persistent for the vehicle you were in
+					if (vehicle && lastVehicle != vehicle) {
+						lastVehicle = vehicle;
+						currentVehicleItem.Reset();
+						if (vehicle) {
+							auto real_vehicle = static_cast<jc3::CVehicle*>(vehicle);
+
+							auto name_hash = real_vehicle->GetNameHash();
+
+							using json = nlohmann::json;
+							static json vehicle_hashes = json::parse(jc3::vehicle_hashes);
+							assert(vehicle_hashes.is_array() && "Vehicle hashes is not an array");
+
+							// Car stuff
+							auto hash = real_vehicle->GetNameHash();
+
+							std::string modelName;
+							for (auto &vehicle_js : vehicle_hashes) {
+								if (vehicle_js["hash"].is_number() && static_cast<uint32_t>(vehicle_js["hash"]) == hash) {
+									std::string t = vehicle_js["model_name"];
+									modelName = t;
+								}
+							}
+							if (modelName.empty()) {
+								modelName = std::to_string(hash);
+							}
+							currentVehicleItem.modelName = modelName;
+						}
+					}
+
 					if (vehicle) {
 						auto real_vehicle = static_cast<jc3::CVehicle*>(vehicle);
+
+						bool show_save_as = false;
+
+						if (ImGui::Combo("meow", &currentVehicleItem.profileIndex, g_profiles[currentVehicleItem.modelName])) {
+							// TODO(xforce): Load the new settings
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Save")) {
+							if (g_profiles[currentVehicleItem.modelName].empty()) {
+								ImGui::OpenPopup("Stacked 1");
+								show_save_as = true;
+							}
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Save As")) {
+							ImGui::OpenPopup("Stacked 1");
+							show_save_as = true;
+						}
+
+						static bool open = true;
+						{
+							ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
+							if (ImGui::BeginPopupModal("Stacked 1"))
+							{
+								static char buf[256] = {0};
+								ImGui::InputText("Name", buf, sizeof(buf));
+								if (ImGui::Button("Save")) {
+									if (std::find(std::begin(g_profiles[currentVehicleItem.modelName]), 
+													std::end(g_profiles[currentVehicleItem.modelName]), 
+													buf) == std::end(g_profiles[currentVehicleItem.modelName])) {
+										g_profiles[currentVehicleItem.modelName].emplace_back(buf);
+									}
+
+									auto index = std::distance(std::begin(g_profiles[currentVehicleItem.modelName]), std::find(std::begin(g_profiles[currentVehicleItem.modelName]),
+										std::end(g_profiles[currentVehicleItem.modelName]),
+										buf));
+									currentVehicleItem.profileIndex = static_cast<int>(index);
+
+									fs::create_directories(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName));
+									char file_name[256];
+									sprintf(file_name, "%s.json", buf);
+									std::ofstream testFile(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName).append(file_name));
+									testFile.close();
+									ImGui::CloseCurrentPopup();
+								}
+								ImGui::SameLine();
+								if (ImGui::Button("Close"))
+									ImGui::CloseCurrentPopup();
+								ImGui::EndPopup();
+							}
+						}
+
 						auto pfxVehicle = static_cast<jc3::CVehicle*>(vehicle)->PfxVehicle;
 						if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Car) {
 							DoCarHandlingUI(real_vehicle, pfxVehicle);
