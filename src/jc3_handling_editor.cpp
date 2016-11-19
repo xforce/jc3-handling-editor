@@ -163,7 +163,8 @@ struct VehicleUIItem
 static VehicleUIItem currentVehicleItem;
 
 jc3::CGameObject * lastVehicle = nullptr;
-
+nlohmann::json CarSettingsToJson(jc3::CVehicle * vehicle);
+void CarSettingsFromJson(jc3::CVehicle * vehicle, nlohmann::json settings_json);
 #define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
 void SetupImGuiStyle2();
@@ -256,13 +257,31 @@ BOOL WINAPI DllMain(
 						bool show_save_as = false;
 
 						if (ImGui::Combo("meow", &currentVehicleItem.profileIndex, g_profiles[currentVehicleItem.modelName])) {
-							// TODO(xforce): Load the new settings
+							auto profile_name = g_profiles[currentVehicleItem.modelName][currentVehicleItem.profileIndex];
+							char file_name[256];
+							sprintf(file_name, "%s.json", profile_name.c_str());
+							std::ifstream testFile(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName).append(file_name));
+							if (testFile.is_open()) {
+								nlohmann::json settings_json;
+								testFile >> settings_json;
+								testFile.close();
+								CarSettingsFromJson(real_vehicle, settings_json);
+							}
 						}
 						ImGui::SameLine();
 						if (ImGui::Button("Save")) {
 							if (g_profiles[currentVehicleItem.modelName].empty()) {
 								ImGui::OpenPopup("Stacked 1");
 								show_save_as = true;
+							}
+							if (!show_save_as) {
+								auto profile_name = g_profiles[currentVehicleItem.modelName][currentVehicleItem.profileIndex];
+								fs::create_directories(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName));
+								char file_name[256];
+								sprintf(file_name, "%s.json", profile_name.c_str());
+								std::ofstream testFile(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName).append(file_name));
+								testFile << std::setw(4) << CarSettingsToJson(real_vehicle);
+								testFile.close();
 							}
 						}
 						ImGui::SameLine();
@@ -294,6 +313,7 @@ BOOL WINAPI DllMain(
 									char file_name[256];
 									sprintf(file_name, "%s.json", buf);
 									std::ofstream testFile(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName).append(file_name));
+									testFile << std::setw(4) << CarSettingsToJson(real_vehicle);
 									testFile.close();
 									ImGui::CloseCurrentPopup();
 								}

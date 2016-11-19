@@ -18,6 +18,10 @@
 			'src/d3dcompile.cpp',
 
 			'src/ui_menus/car_ui_menu.cpp',
+			'src/ui_menus/bike_ui_menu.cpp',
+			'src/ui_menus/helicopter_ui_menu.cpp',
+			'src/ui_menus/boat_ui_menu.cpp',
+			'src/ui_menus/plane_ui_menu.cpp',
 		],
 	},
 	]

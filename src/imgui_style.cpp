@@ -1,4 +1,6 @@
 #include "../deps/imgui/imgui.h"
+#include "ui_data/Roboto_Medium.h"
+
 
 struct ImVec3 { float x, y, z; ImVec3(float _x = 0.0f, float _y = 0.0f, float _z = 0.0f) { x = _x; y = _y; z = _z; } };
 void imgui_easy_theming(ImVec3 color_for_text, ImVec3 color_for_head, ImVec3 color_for_area, ImVec3 color_for_body, ImVec3 color_for_pops)
@@ -52,6 +54,9 @@ void imgui_easy_theming(ImVec3 color_for_text, ImVec3 color_for_head, ImVec3 col
 	style.FrameRounding = 0;
 	style.WindowRounding = 0;
 	style.IndentSpacing = 12.0f;
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromMemoryCompressedBase85TTF(Robot_Medium_compressed_data_base85, 17);
 }
 
 void SetupImGuiStyle2()

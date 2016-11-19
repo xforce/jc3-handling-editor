@@ -33,6 +33,155 @@ struct SProfileItemInfo
 	JCString m_UIName;
 };
 
+#include <json.hpp>
+
+nlohmann::json CarSettingsToJson(jc3::CVehicle * vehicle) {
+	auto pfxVehicle = static_cast<jc3::CVehicle*>(vehicle)->PfxVehicle;
+	assert(pfxVehicle->GetType() == jc3::PfxType::Car && "This vehicle is not a car");
+	auto pfxCar = static_cast<jc3::CPfxCar*>(pfxVehicle);
+	
+	
+	namespace json = nlohmann;
+	json::json settings_json;
+
+	settings_json["topSpeed"] = *(float*)((char*)pfxVehicle + 0x3EC);
+	settings_json["dragCoefficient"] = vehicle->DragCoefficient;
+	settings_json["mass"] = vehicle->Mass;
+	settings_json["linearDamping"] = vehicle->LinearDamping;
+	settings_json["angularDamping"] = vehicle->AngularDamping;
+	settings_json["gravityFactor"] = vehicle->GravityFactor;
+
+	settings_json["gravityModifiers"] = {
+		{ "gravityGrounded", pfxCar->someGravityModifiers->gravityMultiplierGrounded },
+	};
+
+	auto engine = pfxCar->landVehicleEngine;
+	settings_json["engine"] = {
+		{"isClutching", *(bool*)&engine->isClutching },
+		{"clutchDelay", engine->clutchDelay },
+		{ "clutchingTime", engine->clutchingTime },
+		{ "clutchAmount", engine->clutchAmount },
+		{ "manualClutchEngageTimer", engine->manualClutchEngageTimer },
+		{ "sourceClutchRpm", engine->sourceClutchRpm },
+		{ "targetClutchRpm", engine->targetClutchRpm },
+		{ "engineRevs", engine->engineRevs },
+		{ "engineDamage", engine->engineDamage },
+		{ "revLimiterMagnitudeRPM", engine->revLimiterMagnitudeRPM },
+		{ "isRevLimiting", *(bool*)&engine->isRevLimiting },
+		{ "fullLoadTorque", engine->fullLoadTorque },
+		{ "lowestMaxTorque", engine->lowestMaxTorque },
+		{ "engineMinNoise", engine->engineMinNoise },
+		{ "engineDamageNoiseScale", engine->engineDamageNoiseScale },
+		{ "engineMaxDamageTorqueFactor", engine->engineMaxDamageTorqueFactor },
+		{ "minRPM", engine->minRPM },
+		{ "optRPM", engine->optRPM },
+		{ "maxTorque", engine->maxTorque },
+		{ "torqueFactorAtMinRPM", engine->torqueFactorAtMinRPM },
+		{ "torqueFactorAtMaxRPM", engine->torqueFactorAtMaxRPM },
+		{ "resistanceFactorAtMinRPM", engine->resistanceFactorAtMinRPM },
+		{ "resistanceFactorAtOptRPM", engine->resistanceFactorAtOptRPM },
+		{ "resistanceFactorAtMaxRPM", engine->resistanceFactorAtMaxRPM },
+		{ "clutchSlipRPM", engine->clutchSlipRPM },
+		{ "maxRPM", engine->maxRPM },
+		{ "overdriveMaxRPM", engine->overdriveMaxRPM },
+		{ "isOverdriveActive", engine->isOverdriveActive },
+	};
+
+	auto engineTransmission = pfxCar->landVehicleTransmission;
+	settings_json["engineTransmission"] = {
+		{ "forwardTorqueRatio", engineTransmission->transmissionProperties.forwardTorqueRatio },
+		{ "lowGearForwardTorqueRatio", engineTransmission->transmissionProperties.lowGearForwardTorqueRatio },
+		{ "maxTransmissionRPM", engineTransmission->transmissionProperties.maxTransmissionRPM },
+		{ "maxReversingTransmissionRPM", engineTransmission->transmissionProperties.maxReversingTransmissionRPM },
+		{ "targetCruiseRPM", engineTransmission->transmissionProperties.targetCruiseRPM },
+		{ "decayTimeToCruiseRPM", engineTransmission->transmissionProperties.decayTimeToCruiseRPM },
+		{ "lowGearingPrimaryTransmissionRatio", engineTransmission->transmissionProperties.lowGearingPrimaryTransmissionRatio },
+		{ "downshiftRPM", engineTransmission->transmissionProperties.downshiftRPM },
+		{ "upshiftRPM", engineTransmission->transmissionProperties.upshiftRPM },
+		{ "primaryTransmissionRatio", engineTransmission->transmissionProperties.primaryTransmissionRatio },
+	};
+	{
+		std::vector<float> meow;
+		for (int i = 0; i < engineTransmission->transmissionProperties.wheelsTorqueRatio.size; ++i) {
+			meow.emplace_back(engineTransmission->transmissionProperties.wheelsTorqueRatio.Data[i]);
+		}
+		settings_json["engineTransmission"]["wheelTorqueRatio"] = meow;
+	}
+
+	return settings_json;
+}
+
+void CarSettingsFromJson(jc3::CVehicle * vehicle, nlohmann::json settings_json) {
+	auto pfxVehicle = static_cast<jc3::CVehicle*>(vehicle)->PfxVehicle;
+	assert(pfxVehicle->GetType() == jc3::PfxType::Car && "This vehicle is not a car");
+	auto pfxCar = static_cast<jc3::CPfxCar*>(pfxVehicle);
+
+	*(float*)((char*)pfxVehicle + 0x3EC) = settings_json.value("topSpeed", *(float*)((char*)pfxVehicle + 0x3EC));
+	vehicle->DragCoefficient = settings_json.value("dragCoefficient", vehicle->DragCoefficient);
+	vehicle->Mass = settings_json.value("mass", vehicle->Mass);
+	vehicle->LinearDamping = settings_json.value("linearDamping", vehicle->LinearDamping);
+	vehicle->AngularDamping = settings_json.value("angularDamping", vehicle->AngularDamping);
+	vehicle->GravityFactor = settings_json.value("gravityFactor", vehicle->GravityFactor);
+
+	if (settings_json.find("gravityModifiers") != settings_json.end()) {
+		pfxCar->someGravityModifiers->gravityMultiplierGrounded = settings_json["gravityModifiers"].value("gravityGrounded", pfxCar->someGravityModifiers->gravityMultiplierGrounded);
+	}
+
+	auto engine = pfxCar->landVehicleEngine;
+	if (settings_json.find("engine") != settings_json.end()) {
+		auto & engine_json = settings_json["engine"];
+		engine->isClutching = engine_json.value("isClutching", *(bool*)&engine->isClutching);
+		engine->clutchDelay = engine_json.value("clutchDelay", engine->clutchDelay);
+		engine->clutchingTime = engine_json.value( "clutchingTime", engine->clutchingTime );
+		engine->clutchAmount = engine_json.value( "clutchAmount", engine->clutchAmount );
+		engine->manualClutchEngageTimer = engine_json.value( "manualClutchEngageTimer", engine->manualClutchEngageTimer );
+		engine->sourceClutchRpm = engine_json.value( "sourceClutchRpm", engine->sourceClutchRpm );
+		engine->targetClutchRpm = engine_json.value( "targetClutchRpm", engine->targetClutchRpm );
+		engine->engineRevs = engine_json.value( "engineRevs", engine->engineRevs );
+		engine->engineDamage = engine_json.value( "engineDamage", engine->engineDamage );
+		engine->revLimiterMagnitudeRPM = engine_json.value( "revLimiterMagnitudeRPM", engine->revLimiterMagnitudeRPM );
+		engine->isRevLimiting = engine_json.value( "isRevLimiting", *(bool*)&engine->isRevLimiting );
+		engine->fullLoadTorque = engine_json.value( "fullLoadTorque", engine->fullLoadTorque );
+		engine->lowestMaxTorque = engine_json.value( "lowestMaxTorque", engine->lowestMaxTorque );
+		engine->engineMinNoise = engine_json.value( "engineMinNoise", engine->engineMinNoise );
+		engine->engineDamageNoiseScale = engine_json.value( "engineDamageNoiseScale", engine->engineDamageNoiseScale );
+		engine->engineMaxDamageTorqueFactor = engine_json.value( "engineMaxDamageTorqueFactor", engine->engineMaxDamageTorqueFactor );
+		engine->minRPM = engine_json.value( "minRPM", engine->minRPM);
+		engine->optRPM = engine_json.value( "optRPM", engine->optRPM);
+		engine->maxTorque = engine_json.value( "maxTorque", engine->maxTorque);
+		engine->torqueFactorAtMinRPM = engine_json.value( "torqueFactorAtMinRPM", engine->torqueFactorAtMinRPM);
+		engine->torqueFactorAtMaxRPM = engine_json.value( "torqueFactorAtMaxRPM", engine->torqueFactorAtMaxRPM);
+		engine->resistanceFactorAtMinRPM = engine_json.value( "resistanceFactorAtMinRPM", engine->resistanceFactorAtMinRPM);
+		engine->resistanceFactorAtOptRPM = engine_json.value( "resistanceFactorAtOptRPM", engine->resistanceFactorAtOptRPM);
+		engine->resistanceFactorAtMaxRPM = engine_json.value( "resistanceFactorAtMaxRPM", engine->resistanceFactorAtMaxRPM);
+		engine->clutchSlipRPM = engine_json.value( "clutchSlipRPM", engine->clutchSlipRPM);
+		engine->maxRPM = engine_json.value( "maxRPM", engine->maxRPM);
+		engine->overdriveMaxRPM = engine_json.value( "overdriveMaxRPM", engine->overdriveMaxRPM);
+		engine->isOverdriveActive = engine_json.value("isOverdriveActive", engine->isOverdriveActive);
+	}
+
+	auto engineTransmission = pfxCar->landVehicleTransmission;
+	if (settings_json.find("engineTransmission") != settings_json.end()) {
+		auto & engineTransmission_json = settings_json["engineTransmission"];
+		engineTransmission->transmissionProperties.forwardTorqueRatio = engineTransmission_json.value("forwardTorqueRatio", engineTransmission->transmissionProperties.forwardTorqueRatio);
+		engineTransmission->transmissionProperties.lowGearForwardTorqueRatio = engineTransmission_json.value( "lowGearForwardTorqueRatio", engineTransmission->transmissionProperties.lowGearForwardTorqueRatio );
+		engineTransmission->transmissionProperties.maxTransmissionRPM = engineTransmission_json.value( "maxTransmissionRPM", engineTransmission->transmissionProperties.maxTransmissionRPM );
+		engineTransmission->transmissionProperties.maxReversingTransmissionRPM = engineTransmission_json.value( "maxReversingTransmissionRPM", engineTransmission->transmissionProperties.maxReversingTransmissionRPM );
+		engineTransmission->transmissionProperties.targetCruiseRPM = engineTransmission_json.value( "targetCruiseRPM", engineTransmission->transmissionProperties.targetCruiseRPM );
+		engineTransmission->transmissionProperties.decayTimeToCruiseRPM = engineTransmission_json.value( "decayTimeToCruiseRPM", engineTransmission->transmissionProperties.decayTimeToCruiseRPM );
+		engineTransmission->transmissionProperties.lowGearingPrimaryTransmissionRatio = engineTransmission_json.value( "lowGearingPrimaryTransmissionRatio", engineTransmission->transmissionProperties.lowGearingPrimaryTransmissionRatio );
+		engineTransmission->transmissionProperties.downshiftRPM = engineTransmission_json.value( "downshiftRPM", engineTransmission->transmissionProperties.downshiftRPM );
+		engineTransmission->transmissionProperties.upshiftRPM = engineTransmission_json.value( "upshiftRPM", engineTransmission->transmissionProperties.upshiftRPM );
+		engineTransmission->transmissionProperties.primaryTransmissionRatio = engineTransmission_json.value( "primaryTransmissionRatio", engineTransmission->transmissionProperties.primaryTransmissionRatio );
+		{
+			std::vector<float> meow = engineTransmission_json.value("wheelTorqueRatio", std::vector<float>());
+			for (int i = 0; i < meow.size() && i < engineTransmission->transmissionProperties.wheelsTorqueRatio.size; ++i) {
+				engineTransmission->transmissionProperties.wheelsTorqueRatio.Data[i] = meow[i];
+			}
+		}
+	}
+}
+
 void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
 
 	auto pfxCar = static_cast<jc3::CPfxCar*>(pfxVehicle);
@@ -160,8 +309,6 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 
 		ImGui::TreePop();
 	}
-
-	std::this_thread::yield();
 
 	if (ImGui::CollapsingHeader("Brakes")) {
 		ImGui::TreePush("Brakes Front");
