@@ -8,6 +8,7 @@ A in-game realtime handling editor, also supports auto load of saved profiles.
 
 ## Installation
 * Clone this repo
+* Run `git submodule update --init --recursive`
 * Run `python configure.py`
 * Run `python build.py`
 * Either copy or symlink the resulting DLL (in `out\Release`) to your `Just Cause 3\mods` directory
