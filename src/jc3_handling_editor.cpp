@@ -26,6 +26,7 @@
 #include <jc3/entities/character.h>
 #include <jc3/entities/vehicle.h>
 #include <jc3/ui/overlay_ui.h>
+#include <jc3/spawn/spawn_system.h>
 
 namespace fs = std::experimental::filesystem;
 
@@ -217,6 +218,21 @@ BOOL WINAPI DllMain(
 		d3d11_hook_events.on_present_callback.connect([]() {
 			ImGui_ImplDX11_NewFrame();
 			if (overlayState) {
+				if(ImGui::Button("Meow")) {
+					// Spawn D700
+					auto modelId = jc3::CSpawnSystem::instance()->GetModelId(1683768425);
+					jc3::Matrix spawnMatrix;
+					jc3::CCharacter::GetLocalPlayerCharacter()->GetTransform(&spawnMatrix);
+					jc3::CSpawnSystem::instance()->Spawn(modelId, spawnMatrix, 0x2207C, [](jc3::CSpawnSystem::SpawnFactoryRequest* factoryRequest, stl::vector<boost::shared_ptr<jc3::CGameObject>>* spawned_objects, void* userdata) {
+						if (spawned_objects)
+						{
+							for (auto object : *spawned_objects)
+							{
+								//if (object->IsType(GameObjectManager::instance()->GetClassIdByName("CCharacter"))
+							}
+						}
+					});
+				}
 				if (jc3::CCharacter::GetLocalPlayerCharacter()) {
 					auto vehicle = jc3::CCharacter::GetLocalPlayerCharacter()->GetVehicle();
 
@@ -284,6 +300,7 @@ BOOL WINAPI DllMain(
 								testFile.close();
 							}
 						}
+
 						ImGui::SameLine();
 						if (ImGui::Button("Save As")) {
 							ImGui::OpenPopup("Stacked 1");
