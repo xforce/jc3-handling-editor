@@ -1,12 +1,12 @@
 [submodule "deps/imgui"]
 	path = deps/imgui
-	url = ../../ocornut/imgui.git
+	url = https://github.com/ocornut/imgui.git
 [submodule "deps/jc3_api"]
 	path = deps/jc3_api
-	url = ../jc3-api.git
+	url = https://github.com/xforce/jc3-api.git
 [submodule "deps/json"]
 	path = deps/json
-	url = ../../nlohmann/json.git
+	url = https://github.com/nlohmann/json.git
 [submodule "deps/ksignals"]
 	path = deps/ksignals
-	url = ../ksignals.git
+	url = https://github.com/xforce/ksignals.git
