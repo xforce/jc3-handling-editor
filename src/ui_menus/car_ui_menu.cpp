@@ -27,12 +27,6 @@ struct JCString
 	}
 };
 
-struct SProfileItemInfo
-{
-	char pad[0x18];
-	JCString m_UIName;
-};
-
 #include <json.hpp>
 
 nlohmann::json CarSettingsToJson(jc3::CVehicle * vehicle) {
@@ -314,13 +308,6 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 		ImGui::TreePush("Brakes Front");
 		ImGui::Text("Front");
 		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesProperties->front.handbrake);
-		// Just making sure all the memory is set :D
-		if (*(bool*)&pfxCar->brakesProperties->front.handbrake) {
-			pfxCar->brakesProperties->front.handbrake = 1;
-		}
-		else {
-			pfxCar->brakesProperties->front.handbrake = 0;
-		}
 		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->front.maxTorque);
 		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->front.minTimeToBlock);
 		ImGui::TreePop();
@@ -328,13 +315,6 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 		ImGui::Text("Rear");
 		ImGui::TreePush("Brakes Rear");
 		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesProperties->rear.handbrake);
-		// Just making sure all the memory is set :D
-		if (*(bool*)&pfxCar->brakesProperties->rear.handbrake) {
-			pfxCar->brakesProperties->rear.handbrake = 1;
-		}
-		else {
-			pfxCar->brakesProperties->rear.handbrake = 0;
-		}
 		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->rear.maxTorque);
 		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->rear.minTimeToBlock);
 		ImGui::TreePop();
