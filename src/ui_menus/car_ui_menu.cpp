@@ -278,24 +278,25 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 	if (ImGui::CollapsingHeader("Suspension")) {
 		ImGui::TreePush("Suspension");
 		for (int i = 0; i < pfxCar->wheelInfo.size; ++i) {
-			auto & suspension = pfxCar->wheelSuspensions[i];
+			auto & suspension = pfxCar->wheelSuspensionConstants[i];
 			char wheel_text[100];
 			sprintf(wheel_text, "Suspension Wheel %d", i);
 			if (ImGui::CollapsingHeader(wheel_text)) {
 				ImGui::TreePush(wheel_text);
-				ImGui::DragFloat("Suspension Force Mag At Rest", &suspension.suspensionForceMagnitudeAtRest);
-				ImGui::DragFloat("Suspension Length At Rest", &suspension.suspensionLengthAtRest);
+				ImGui::DragFloat("Suspension Force Mag At Rest", &suspension.m_SuspensionForceMagnitudeAtRest_N);
+				ImGui::DragFloat("Suspension Length At Rest", &suspension.m_SuspensionLengthAtRest_m);
 				if (ImGui::CollapsingHeader("Properties")) {
-					auto properties = suspension.suspensionProperties;
-					ImGui::DragFloat("Antirollbar Strength", &properties->antiRollbarStrength);
+
+					auto properties = suspension.m_SuspensionProperties;
+					ImGui::DragFloat("Antirollbar Strength", &properties->antirollbar_strength);
 					ImGui::DragFloat("Compression", &properties->compression);
 					ImGui::DragFloat("Length", &properties->length);
 					ImGui::DragFloat("Relaxation", &properties->relaxation);
 					ImGui::DragFloat("Strength", &properties->strength);
-					ImGui::DragFloat("Lateral Tire Force Offset", &properties->lateralTireForceOffset);
-					ImGui::DragFloat("Longtid Tire Force Offset", &properties->longitudinalTireForceOffse);
-					ImGui::DragFloat("Tire drag Force offset", &properties->tireDragForceOffset);
-					ImGui::DragFloat("Hardpoint offset along spring", &properties->hardpointOffsetOnSpring);
+					ImGui::DragFloat("Lateral Tire Force Offset", &properties->lateral_tire_force_offset);
+					ImGui::DragFloat("Longtid Tire Force Offset", &properties->longitudinal_tire_force_offset);
+					ImGui::DragFloat("Tire drag Force offset", &properties->tire_drag_force_offset);
+					ImGui::DragFloat("Hardpoint offset along spring", &properties->hardpoint_offset_along_spring);
 				}
 				ImGui::TreePop();
 			}
@@ -308,25 +309,25 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 		ImGui::TreePush("Brakes Front");
 		ImGui::Text("Front");
 		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesProperties->front.handbrake);
-		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->front.maxTorque);
-		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->front.minTimeToBlock);
+		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->front.max_brake_torque);
+		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->front.min_time_to_block);
 		ImGui::TreePop();
 		ImGui::Separator();
 		ImGui::Text("Rear");
 		ImGui::TreePush("Brakes Rear");
 		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesProperties->rear.handbrake);
-		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->rear.maxTorque);
-		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->rear.minTimeToBlock);
+		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->rear.max_brake_torque);
+		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->rear.min_time_to_block);
 		ImGui::TreePop();
 	}
 
 	if (ImGui::CollapsingHeader("Aerodynamics")) {
 		ImGui::TreePush("Aerodynamic");
-		ImGui::DragFloat("Air Density", &pfxCar->carAerodynamics->airDensity);
-		ImGui::DragFloat("Frontal Area", &pfxCar->carAerodynamics->frontalArea);
-		ImGui::DragFloat("Drag Coefficient", &pfxCar->carAerodynamics->dragCoefficient);
-		ImGui::DragFloat("Top Speed Drag Coefficient", &pfxCar->carAerodynamics->topSpeedDragCoefficient);
-		ImGui::DragFloat("Lift Coefficient", &pfxCar->carAerodynamics->liftCoefficient);
+		ImGui::DragFloat("Air Density", &pfxCar->landAerodynamics->air_density);
+		ImGui::DragFloat("Frontal Area", &pfxCar->landAerodynamics->frontal_area);
+		ImGui::DragFloat("Drag Coefficient", &pfxCar->landAerodynamics->drag_coefficient);
+		ImGui::DragFloat("Top Speed Drag Coefficient", &pfxCar->landAerodynamics->top_speed_drag_coefficient);
+		ImGui::DragFloat("Lift Coefficient", &pfxCar->landAerodynamics->lift_coefficient);
 		ImGui::TreePop();
 	}
 
