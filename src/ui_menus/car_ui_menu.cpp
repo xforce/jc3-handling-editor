@@ -283,11 +283,11 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 			sprintf(wheel_text, "Suspension Wheel %d", i);
 			if (ImGui::CollapsingHeader(wheel_text)) {
 				ImGui::TreePush(wheel_text);
-				ImGui::DragFloat("Suspension Force Mag At Rest", &suspension.m_SuspensionForceMagnitudeAtRest_N);
-				ImGui::DragFloat("Suspension Length At Rest", &suspension.m_SuspensionLengthAtRest_m);
+				ImGui::DragFloat("Suspension Force Mag At Rest", &suspension.suspensionForceMagnitudeAtRest_N);
+				ImGui::DragFloat("Suspension Length At Rest", &suspension.suspensionLengthAtRest_m);
 				if (ImGui::CollapsingHeader("Properties")) {
 
-					auto properties = suspension.m_SuspensionProperties;
+					auto properties = suspension.suspensionProperties;
 					ImGui::DragFloat("Antirollbar Strength", &properties->antirollbar_strength);
 					ImGui::DragFloat("Compression", &properties->compression);
 					ImGui::DragFloat("Length", &properties->length);
@@ -366,6 +366,26 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 			ImGui::TreePop();
 		}
 	}
+
+    //if (ImGui::CollapsingHeader("Steering")) {
+    //    ImGui::TreePush("Steering");
+    //    ImGui::DragFloat("dead_zone", &pfxCar->landSteeringResourceCachePtr.data->dead_zone);
+    //    ImGui::DragFloat("saturation_zone", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.saturation_zone);
+    //    ImGui::DragFloat("t_to_full_steer_s", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.t_to_full_steer_s);
+    //    ImGui::DragFloat("max_speed_t_to_full_steer_s", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.max_speed_t_to_full_steer_s);
+    //    ImGui::DragFloat("min_speed_kmph", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.min_speed_kmph);
+    //    ImGui::DragFloat("max_speed_kmph", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.max_speed_kmph);
+    //    ImGui::DragFloat("steer_angle_min_speed_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_angle_min_speed_deg);
+    //    ImGui::DragFloat("steer_angle_max_speed_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_angle_max_speed_deg);
+    //    ImGui::DragFloat("steer_curve_falloff", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_curve_falloff);
+    //    ImGui::DragFloat("countersteer_speed_factor", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.countersteer_speed_factor);
+    //    ImGui::DragFloat("steer_in_speed_factor", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_in_speed_factor);
+    //    ImGui::DragFloat("steer_input_power_pc", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_input_power_pc);
+    //    ImGui::DragFloat("steer_input_power_durango", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_input_power_durango);
+    //    ImGui::DragFloat("steer_input_power_orbis", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_input_power_orbis);
+    //    ImGui::DragFloat("wheel_drift_aligning_strength", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.wheel_drift_aligning_strength);
+    //    ImGui::TreePop();
+    //}
 
 	//util::hooking::func_call<void>(0x143794F60, real_vehicle);
 	util::hooking::func_call<void>(0x1434A64B0, pfxCar);
