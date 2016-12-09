@@ -4,7 +4,7 @@ A in-game realtime handling editor, also supports auto load of saved profiles.
 ## Dependencies
 * Visual Studio 2015
 * Python 2.7
-* Just Cause 3 Mod Loader (or other method of injecting DLL at startup)
+* [Just Cause 3 Mod Loader](https://github.com/xforce/jc3-mod-loader)
 
 ## Installation
 * Clone this repo
