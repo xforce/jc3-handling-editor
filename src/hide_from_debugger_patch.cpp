@@ -143,7 +143,20 @@ bool IsServiceWithInt2E(const void *source)
 		kRet == service->ret && kRet == service->ret2);
 }
 
-void HookZwSetInformationThread()
+struct meow
+{
+    virtual ~meow() {
+        if (origQIP) {
+            auto target = (ServiceFullThunk*)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "ZwSetInformationThread");
+            memcpy(target, origQIP, sizeof(PatchCode));
+            origQIP = nullptr;
+        }
+    }
+};
+
+static meow m;
+
+void HookZwSetInformationThread(bool hotReload)
 {
 	ServiceFullThunk *code = (ServiceFullThunk*)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "ZwSetInformationThread");
 

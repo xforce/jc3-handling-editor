@@ -53,6 +53,7 @@ public:
 // NOTE(xforce): Kind of horrible code
 
 WNDPROC g_originalWndProc = NULL;
+HWND g_Hwnd = NULL;
 
 std::unordered_map<std::string, std::vector<std::string>> g_profiles;
 
@@ -375,7 +376,7 @@ void DoHelicopterHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVe
 void DoPlaneHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
 
 void SetupImGuiStyle2();
-void HookZwSetInformationThread();
+void HookZwSetInformationThread(bool hotReload);
 
 static std::vector<std::string> vehicleList;
 static int lastSelectedVehicle = 0;
@@ -387,7 +388,7 @@ static std::unordered_map<std::string, std::vector<std::string>> spawnMenuweapon
 static std::unordered_map<std::string, std::vector<uint32_t>> spawnMenuweaponHashes;
 
 void DoSpawnMenu() {
-    ImGui::Begin("Spawn Menu");
+    ImGui::Begin("Spawn Menu 435345");
 
     static int curIndex = 0;
     static bool spawnOnListItemClick = false;
@@ -495,7 +496,11 @@ BOOL WINAPI DllMain(
     _In_ LPVOID    lpvReserved
 ) {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        HookZwSetInformationThread();
+        bool hotReload = true;
+        if (*(uint32_t*)(0x0000000160000000) == 0) {
+            hotReload = false;
+        }
+        HookZwSetInformationThread(hotReload);
 
         // Load all profiles
         for (auto &p : fs::directory_iterator(GetProfilesSavePath())) {
@@ -546,8 +551,6 @@ BOOL WINAPI DllMain(
         // TODO(xforce): Move this to hooking, add some initialize function
         util::hooking::hooking_helpers::SetExecutableAddress(GetProcessBaseAddress());
         util::hooking::ExecutableInfo::instance()->EnsureExecutableInfo();
-        auto meow = VirtualAlloc((LPVOID)0x0000000160000000, 0x6000000, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-        meow = meow;
 
         HMODULE module = NULL;
         char buffer[MAX_PATH] = { 0 };
@@ -555,12 +558,12 @@ BOOL WINAPI DllMain(
         strcat(buffer, "\\d3d11.dll");
         module = LoadLibraryA(buffer);
 
-		auto &d3d11_hook_events = InstallD3D11Hook();
+		auto &d3d11_hook_events = InstallD3D11Hook(hotReload);
 		d3d11_hook_events.on_d3d11_initialized.connect([](HWND hwnd, ID3D11Device *device, ID3D11DeviceContext *deviceContext) {
 			g_originalWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
+            g_Hwnd = hwnd;
 			ImGui_ImplDX11_Init(hwnd, device, deviceContext);
 			SetupImGuiStyle2();
-            util::hooking::nop(0x1435595A5, 4);
             static util::hooking::inject_call<void, uintptr_t*, float, bool, bool> inject(0x14355960C);
             inject.inject([](uintptr_t *meow, float a2, bool enabled, bool has_focus) {
                 auto overlayInstance = *(uintptr_t*)(0x142F38858);
@@ -580,7 +583,7 @@ BOOL WINAPI DllMain(
 			if (overlayState) {
                 ImGui::Combo("meow", &lastSelectedVehicle, vehicleList);
                 ImGui::SameLine();
-				if(ImGui::Button("Spawn")) {
+				if(ImGui::Button("Spawkn")) {
                     auto &meow = vehicle_hashes[lastSelectedVehicle];
                     if (meow["hash"].is_number()) {
                         auto modelId = jc3::CSpawnSystem::instance()->GetModelId(meow["hash"]);
@@ -650,7 +653,7 @@ BOOL WINAPI DllMain(
 						ImGui::SameLine();
 						if (ImGui::Button("Save")) {
 							if (g_profiles[currentVehicleItem.modelName].empty()) {
-								ImGui::OpenPopup("Stacked 1");
+								ImGui::OpenPopup("Stacked 1f55577f");
 								show_save_as = true;
 							}
 							if (!show_save_as) {
@@ -666,14 +669,14 @@ BOOL WINAPI DllMain(
 
 						ImGui::SameLine();
 						if (ImGui::Button("Save As")) {
-							ImGui::OpenPopup("Stacked 1");
+							ImGui::OpenPopup("Stacked k1");
 							show_save_as = true;
 						}
 
 						static bool open = true;
 						{
 							ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
-							if (ImGui::BeginPopupModal("Stacked 1"))
+							if (ImGui::BeginPopupModal("Stacked 1777"))
 							{
 								static char buf[256] = {0};
 								ImGui::InputText("Name", buf, sizeof(buf));
@@ -735,6 +738,7 @@ BOOL WINAPI DllMain(
         util::hooking::set_import("GetSystemMetrics", (uintptr_t)hook_GetSystemMetrics);
     }
     if (fdwReason == DLL_PROCESS_DETACH) {
+        g_originalWndProc = (WNDPROC)SetWindowLongPtr(g_Hwnd, GWLP_WNDPROC, (LONG_PTR)g_originalWndProc);
         ImGui_ImplDX11_Shutdown();
     }
     return TRUE;

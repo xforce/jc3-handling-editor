@@ -12,4 +12,4 @@ struct D3D11HookEvents
 	ksignals::Event<> meow4;
 };
 
-D3D11HookEvents &InstallD3D11Hook();
+D3D11HookEvents &InstallD3D11Hook(bool hotReload);
