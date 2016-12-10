@@ -7,6 +7,10 @@ A in-game realtime handling editor, also supports auto load of saved profiles.
 * [Just Cause 3 Mod Loader](https://github.com/xforce/jc3-mod-loader)
 
 ## Installation
+You can find builds on [releases](https://github.com/xforce/jc3-handling-editor/releases) (THEY ARE CURRENTLY ONLY WIP)
+
+or
+
 * Clone this repo
 * Run `git submodule update --init --recursive`
 * Run `python configure.py`
