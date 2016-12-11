@@ -7,6 +7,8 @@
 
 #include <jc3/hashes/vehicles.h>
 
+#include <jc3/entities/pfx/land_steering.h>
+
 struct JCString
 {
 	union _Bxty {
@@ -219,60 +221,58 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 	if (ImGui::CollapsingHeader("Engine"))
 	{
 		ImGui::TreePush("Engine");
-		auto engine = pfxCar->landVehicleEngine;
-		ImGui::Checkbox("Is Clutching", (bool*)&engine->isClutching);
-		ImGui::DragFloat("Clutch delay", &engine->clutchDelay);
-		ImGui::DragFloat("Clutching Time", &engine->clutchingTime);
-		ImGui::DragFloat("Clutch amount", &engine->clutchAmount);
-		ImGui::DragFloat("Manual Clutch Engage Timer", &engine->manualClutchEngageTimer);
-		ImGui::DragFloat("Source clutch Rpm", &engine->sourceClutchRpm);
-		ImGui::DragFloat("Target Clutch Rpm", &engine->targetClutchRpm);
-		ImGui::DragFloat("Engine Revs", &engine->engineRevs);
-		ImGui::DragFloat("Engine Damage", &engine->engineDamage);
-		ImGui::DragFloat("Rev Limiter Magnitude RPM", &engine->revLimiterMagnitudeRPM);
-		ImGui::Checkbox("Is Rev Limiting", (bool*)&engine->isRevLimiting);
-		ImGui::DragFloat("Full Load Torque", &engine->fullLoadTorque);
-		ImGui::DragFloat("Lowest Max Torque", &engine->lowestMaxTorque);
-		ImGui::DragFloat("Engine Min Noise", &engine->engineMinNoise);
-		ImGui::DragFloat("Engine Damage Noise Scale", &engine->engineDamageNoiseScale);
-		ImGui::DragFloat("Engine Max Damage Torque Factor", &engine->engineMaxDamageTorqueFactor);
-		ImGui::DragFloat("Min RPM", &engine->minRPM);
-		ImGui::DragFloat("Optimal RPM", &engine->optRPM);
-		ImGui::DragFloat("Max Torque", &engine->maxTorque);
-		ImGui::DragFloat("Torque Factor at Min RPM", &engine->torqueFactorAtMinRPM);
-		ImGui::DragFloat("Torque Factor at Max RPM", &engine->torqueFactorAtMaxRPM);
-		ImGui::DragFloat("Resistance Factor at Min RPM", &engine->resistanceFactorAtMinRPM);
-		ImGui::DragFloat("Resistance Factor at Optimal RPM", &engine->resistanceFactorAtOptRPM);
-		ImGui::DragFloat("Resistance Factor at Max RPM", &engine->resistanceFactorAtMaxRPM);
-		ImGui::DragFloat("Clutch Slop RPM", &engine->clutchSlipRPM);
-		ImGui::DragFloat("Max RPM", &engine->maxRPM);
-		ImGui::DragFloat("Overdrive Max RPM", &engine->overdriveMaxRPM);
-		ImGui::Checkbox("Overdrive Active", (bool*)&engine->isOverdriveActive);
+		auto engine = pfxCar->landEngineResourceCachePtr.data;
+		ImGui::DragFloat("resistance_at_min_rpm", &engine->resistance_at_min_rpm);
+		ImGui::DragFloat("resistance_at_max_rpm", &engine->resistance_at_max_rpm);
+		ImGui::DragFloat("resistance_at_optimal_rpm", &engine->resistance_at_optimal_rpm);
+		ImGui::DragFloat("rev_limiter_rpm_drop", &engine->rev_limiter_rpm_drop);
+		ImGui::DragFloat("max_rpm", &engine->max_rpm);
+		ImGui::DragFloat("min_rpm", &engine->min_rpm);
+		ImGui::DragFloat("optimal_rpm", &engine->optimal_rpm);
+		ImGui::DragFloat("torque_factor_at_max_rpm", &engine->torque_factor_at_max_rpm);
+		ImGui::DragFloat("torque_factor_at_min_rpm", &engine->torque_factor_at_min_rpm);
+		ImGui::DragFloat("torque_factor_at_optimal_rpm", &engine->torque_factor_at_optimal_rpm);
+		ImGui::DragFloat("clutch_slip_rpm", &engine->clutch_slip_rpm);
+		ImGui::DragFloat("engine_min_noise", &engine->engine_min_noise);
+		ImGui::DragFloat("engine_damage_noise_scale", &engine->engine_damage_noise_scale);
+		ImGui::DragFloat("engine_max_damage_torque", &engine->engine_max_damage_torque);
 		ImGui::TreePop();
+
+        pfxCar->ApplyLandEngine(*pfxCar->landEngineResourceCachePtr.data);
 	}
 
 	if (ImGui::CollapsingHeader("Engine Transmission")) {
 		ImGui::TreePush("Engine Transmission");
-		auto engineTransmission = pfxCar->landVehicleTransmission;
 
-		ImGui::SliderFloat("Forward Torque Ratio", &engineTransmission->transmissionProperties.forwardTorqueRatio, 0, 128);
-		ImGui::SliderFloat("Low Gear Forward Torque Ratio", &engineTransmission->transmissionProperties.lowGearForwardTorqueRatio, 0, 128);
-		ImGui::SliderFloat("Max Transmission RPM", &engineTransmission->transmissionProperties.maxTransmissionRPM, 0, 128);
-		ImGui::SliderFloat("Max Reverse Transmission RPM", &engineTransmission->transmissionProperties.maxReversingTransmissionRPM, 0, 128);
-		ImGui::SliderFloat("Target Cruise RPM", &engineTransmission->transmissionProperties.targetCruiseRPM, 0, 50000);
-		ImGui::SliderFloat("Decay Time to Cruise RPM", &engineTransmission->transmissionProperties.decayTimeToCruiseRPM, -10, 128);
-		ImGui::SliderFloat("Low Gearing Primary Transmission Ratio", &engineTransmission->transmissionProperties.lowGearingPrimaryTransmissionRatio, -10, 128);
-		ImGui::SliderFloat("Downshift RPM", &engineTransmission->transmissionProperties.downshiftRPM, 0, 50000);
-		ImGui::SliderFloat("Upshift RPM", &engineTransmission->transmissionProperties.upshiftRPM, 0, 50000);
-		ImGui::SliderFloat("Primary Transmission Ratio", &engineTransmission->transmissionProperties.primaryTransmissionRatio, 0, 128);
-		for (int i = 0; i < engineTransmission->transmissionProperties.wheelsTorqueRatio.size; ++i) {
+		ImGui::DragInt("gears", &pfxCar->transmissionResourceCachePtr.data->gears);
+        ImGui::DragInt("nitrous_gears", &pfxCar->transmissionResourceCachePtr.data->nitrous_gears);
+
+        ImGui::DragInt("sequential", &pfxCar->transmissionResourceCachePtr.data->sequential);
+        ImGui::DragInt("manual_clutch", &pfxCar->transmissionResourceCachePtr.data->manual_clutch);
+
+        ImGui::DragFloat("manual_clutch_blend_rpm", &pfxCar->transmissionResourceCachePtr.data->manual_clutch_blend_rpm);
+        ImGui::DragFloat("manual_clutch_blend_time", &pfxCar->transmissionResourceCachePtr.data->manual_clutch_blend_time);
+        ImGui::DragFloat("forward_ratio_percentage", &pfxCar->transmissionResourceCachePtr.data->forward_ratio_percentage);
+        ImGui::DragFloat("low_gear_forward_ratio_pct", &pfxCar->transmissionResourceCachePtr.data->low_gear_forward_ratio_pct);
+
+        ImGui::DragFloat("top_speed", &pfxCar->transmissionResourceCachePtr.data->top_speed);
+        ImGui::DragFloat("low_gears_final_drive", &pfxCar->transmissionResourceCachePtr.data->low_gears_final_drive);
+        ImGui::DragFloat("final_drive", &pfxCar->transmissionResourceCachePtr.data->final_drive);
+        ImGui::DragFloat("reverse_gear_ratio", &pfxCar->transmissionResourceCachePtr.data->reverse_gear_ratio);
+        ImGui::DragFloat("clutch_delay", &pfxCar->transmissionResourceCachePtr.data->clutch_delay);
+        ImGui::DragFloat("decay_time_to_cruise_rpm", &pfxCar->transmissionResourceCachePtr.data->decay_time_to_cruise_rpm);
+        ImGui::DragFloat("target_cruise_rpm", &pfxCar->transmissionResourceCachePtr.data->target_cruise_rpm);
+
+		for (int i = 0; i < pfxCar->transmissionResourceCachePtr.data->gears; ++i) {
 			char wheel_text[100];
 			sprintf(wheel_text, "Wheel Torque Ratio %d", i);
 			ImGui::TreePush(wheel_text);
-			ImGui::SliderFloat(wheel_text, &engineTransmission->transmissionProperties.wheelsTorqueRatio.Data[i], 0, 128);
+			ImGui::SliderFloat(wheel_text, &pfxCar->transmissionResourceCachePtr.data->gear_ratios[i], 0, 128);
 			ImGui::TreePop();
 		}
 		ImGui::TreePop();
+
+        pfxCar->ApplyTransmission(*pfxCar->transmissionResourceCachePtr.data);
 	}
 
 	if (ImGui::CollapsingHeader("Suspension")) {
@@ -308,27 +308,31 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 	if (ImGui::CollapsingHeader("Brakes")) {
 		ImGui::TreePush("Brakes Front");
 		ImGui::Text("Front");
-		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesProperties->front.handbrake);
-		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->front.max_brake_torque);
-		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->front.min_time_to_block);
+		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesResourceCachePtr.data->front.handbrake);
+		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesResourceCachePtr.data->front.max_brake_torque);
+		ImGui::DragFloat("Time To Block", &pfxCar->brakesResourceCachePtr.data->front.min_time_to_block);
 		ImGui::TreePop();
 		ImGui::Separator();
 		ImGui::Text("Rear");
 		ImGui::TreePush("Brakes Rear");
-		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesProperties->rear.handbrake);
-		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesProperties->rear.max_brake_torque);
-		ImGui::DragFloat("Time To Block", &pfxCar->brakesProperties->rear.min_time_to_block);
+		ImGui::Checkbox("Handbrake", (bool*)&pfxCar->brakesResourceCachePtr.data->rear.handbrake);
+		ImGui::DragFloat("Max Brake Torque", &pfxCar->brakesResourceCachePtr.data->rear.max_brake_torque);
+		ImGui::DragFloat("Time To Block", &pfxCar->brakesResourceCachePtr.data->rear.min_time_to_block);
 		ImGui::TreePop();
+
+        pfxCar->ApplyBrakes(*pfxCar->brakesResourceCachePtr.data);
 	}
 
 	if (ImGui::CollapsingHeader("Aerodynamics")) {
 		ImGui::TreePush("Aerodynamic");
-		ImGui::DragFloat("Air Density", &pfxCar->landAerodynamics->air_density);
-		ImGui::DragFloat("Frontal Area", &pfxCar->landAerodynamics->frontal_area);
-		ImGui::DragFloat("Drag Coefficient", &pfxCar->landAerodynamics->drag_coefficient);
-		ImGui::DragFloat("Top Speed Drag Coefficient", &pfxCar->landAerodynamics->top_speed_drag_coefficient);
-		ImGui::DragFloat("Lift Coefficient", &pfxCar->landAerodynamics->lift_coefficient);
+		ImGui::DragFloat("Air Density", &pfxCar->landAerodynamicsResourceCachePtr.data->air_density);
+		ImGui::DragFloat("Frontal Area", &pfxCar->landAerodynamicsResourceCachePtr.data->frontal_area);
+		ImGui::DragFloat("Drag Coefficient", &pfxCar->landAerodynamicsResourceCachePtr.data->drag_coefficient);
+		ImGui::DragFloat("Top Speed Drag Coefficient", &pfxCar->landAerodynamicsResourceCachePtr.data->top_speed_drag_coefficient);
+		ImGui::DragFloat("Lift Coefficient", &pfxCar->landAerodynamicsResourceCachePtr.data->lift_coefficient);
 		ImGui::TreePop();
+
+        pfxCar->ApplyLandAerodynamics(*pfxCar->landAerodynamicsResourceCachePtr.data);
 	}
 
 	if (ImGui::CollapsingHeader("Wheels")) {
@@ -367,26 +371,32 @@ void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) 
 		}
 	}
 
-    //if (ImGui::CollapsingHeader("Steering")) {
-    //    ImGui::TreePush("Steering");
-    //    ImGui::DragFloat("dead_zone", &pfxCar->landSteeringResourceCachePtr.data->dead_zone);
-    //    ImGui::DragFloat("saturation_zone", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.saturation_zone);
-    //    ImGui::DragFloat("t_to_full_steer_s", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.t_to_full_steer_s);
-    //    ImGui::DragFloat("max_speed_t_to_full_steer_s", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.max_speed_t_to_full_steer_s);
-    //    ImGui::DragFloat("min_speed_kmph", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.min_speed_kmph);
-    //    ImGui::DragFloat("max_speed_kmph", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.max_speed_kmph);
-    //    ImGui::DragFloat("steer_angle_min_speed_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_angle_min_speed_deg);
-    //    ImGui::DragFloat("steer_angle_max_speed_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_angle_max_speed_deg);
-    //    ImGui::DragFloat("steer_curve_falloff", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_curve_falloff);
-    //    ImGui::DragFloat("countersteer_speed_factor", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.countersteer_speed_factor);
-    //    ImGui::DragFloat("steer_in_speed_factor", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_in_speed_factor);
-    //    ImGui::DragFloat("steer_input_power_pc", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_input_power_pc);
-    //    ImGui::DragFloat("steer_input_power_durango", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_input_power_durango);
-    //    ImGui::DragFloat("steer_input_power_orbis", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.steer_input_power_orbis);
-    //    ImGui::DragFloat("wheel_drift_aligning_strength", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.wheel_drift_aligning_strength);
-    //    ImGui::TreePop();
-    //}
+    auto landSteering = util::hooking::func_call<jc3::SLandSteering*>(0x1434CD7E0, &pfxCar->landSteeringResourceCachePtr);
+
+    if (landSteering) {
+        if (ImGui::CollapsingHeader("Steering")) {
+            ImGui::TreePush("Steering");
+            ImGui::DragFloat("dead_zone", &landSteering->dead_zone);
+            ImGui::DragFloat("saturation_zone", &landSteering->saturation_zone);
+            ImGui::DragFloat("t_to_full_steer_s", &landSteering->t_to_full_steer_s);
+            ImGui::DragFloat("max_speed_t_to_full_steer_s", &landSteering->max_speed_t_to_full_steer_s);
+            ImGui::DragFloat("min_speed_kmph", &landSteering->min_speed_kmph);
+            ImGui::DragFloat("max_speed_kmph", &landSteering->max_speed_kmph);
+            ImGui::DragFloat("steer_angle_min_speed_deg", &landSteering->steer_angle_min_speed_deg);
+            ImGui::DragFloat("steer_angle_max_speed_deg", &landSteering->steer_angle_max_speed_deg);
+            ImGui::DragFloat("steer_curve_falloff", &landSteering->steer_curve_falloff);
+            ImGui::DragFloat("countersteer_speed_factor", &landSteering->countersteer_speed_factor);
+            ImGui::DragFloat("steer_in_speed_factor", &landSteering->steer_in_speed_factor);
+            ImGui::DragFloat("steer_input_power_pc", &landSteering->steer_input_power_pc);
+            ImGui::DragFloat("steer_input_power_durango", &landSteering->steer_input_power_durango);
+            ImGui::DragFloat("steer_input_power_orbis", &landSteering->steer_input_power_orbis);
+            ImGui::DragFloat("wheel_drift_aligning_strength", &landSteering->wheel_drift_aligning_strength);
+            ImGui::TreePop();
+
+            pfxCar->ApplyLandSteering(*landSteering);
+        }
+    }
 
 	//util::hooking::func_call<void>(0x143794F60, real_vehicle);
-	util::hooking::func_call<void>(0x1434A64B0, pfxCar);
+	util::hooking::func_call<void>(0x1434A64B0, pfxCar); // This calculates some speed stuff, don't really know if it is required tbh
 }

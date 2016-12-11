@@ -581,25 +581,6 @@ BOOL WINAPI DllMain(
             }
 
 			if (overlayState) {
-                ImGui::Combo("meow", &lastSelectedVehicle, vehicleList);
-                ImGui::SameLine();
-				if(ImGui::Button("Spawkn")) {
-                    auto &meow = vehicle_hashes[lastSelectedVehicle];
-                    if (meow["hash"].is_number()) {
-                        auto modelId = jc3::CSpawnSystem::instance()->GetModelId(meow["hash"]);
-                        jc3::Matrix spawnMatrix;
-                        jc3::CCharacter::GetLocalPlayerCharacter()->GetTransform(&spawnMatrix);
-                        spawnMatrix.SetPosition(jc3::CCharacter::GetLocalPlayerCharacter()->AimPositionWeapons);
-                        jc3::CSpawnSystem::instance()->Spawn(modelId, spawnMatrix, 0x2207C,
-                            [](jc3::CSpawnSystem::SpawnFactoryRequest* factoryRequest, stl::vector<boost::shared_ptr<jc3::CGameObject>>* spawned_objects, void* userdata) {
-                            for (auto object : *spawned_objects) {
-                                if (object->IsType(jc3::CGameObject::GetClassIdByName("CVehicle"))) {
-                                }
-                            }
-                        });
-                    }
-				}
-                ImGui::Spacing();
 				if (jc3::CCharacter::GetLocalPlayerCharacter()) {
 					auto vehicle = jc3::CCharacter::GetLocalPlayerCharacter()->GetVehicle();
 
@@ -653,7 +634,7 @@ BOOL WINAPI DllMain(
 						ImGui::SameLine();
 						if (ImGui::Button("Save")) {
 							if (g_profiles[currentVehicleItem.modelName].empty()) {
-								ImGui::OpenPopup("Stacked 1f55577f");
+								ImGui::OpenPopup("Stacked");
 								show_save_as = true;
 							}
 							if (!show_save_as) {
@@ -669,14 +650,14 @@ BOOL WINAPI DllMain(
 
 						ImGui::SameLine();
 						if (ImGui::Button("Save As")) {
-							ImGui::OpenPopup("Stacked k1");
+							ImGui::OpenPopup("Stacked");
 							show_save_as = true;
 						}
 
 						static bool open = true;
 						{
 							ImGui::SetNextWindowSize(ImVec2(300, 90), ImGuiSetCond_FirstUseEver);
-							if (ImGui::BeginPopupModal("Stacked 1777"))
+							if (ImGui::BeginPopupModal("Stacked"))
 							{
 								static char buf[256] = {0};
 								ImGui::InputText("Name", buf, sizeof(buf));

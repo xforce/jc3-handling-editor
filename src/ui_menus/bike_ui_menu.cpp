@@ -46,63 +46,62 @@ void DoMotorBikeHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVeh
         ImGui::TreePop();
     }
 
+
     if (ImGui::CollapsingHeader("Engine"))
     {
         ImGui::TreePush("Engine");
-        auto engine = pfxBike->landVehicleEngine;
-        ImGui::Checkbox("Is Clutching", (bool*)&engine->isClutching);
-        ImGui::DragFloat("Clutch delay", &engine->clutchDelay);
-        ImGui::DragFloat("Clutching Time", &engine->clutchingTime);
-        ImGui::DragFloat("Clutch amount", &engine->clutchAmount);
-        ImGui::DragFloat("Manual Clutch Engage Timer", &engine->manualClutchEngageTimer);
-        ImGui::DragFloat("Source clutch Rpm", &engine->sourceClutchRpm);
-        ImGui::DragFloat("Target Clutch Rpm", &engine->targetClutchRpm);
-        ImGui::DragFloat("Engine Revs", &engine->engineRevs);
-        ImGui::DragFloat("Engine Damage", &engine->engineDamage);
-        ImGui::DragFloat("Rev Limiter Magnitude RPM", &engine->revLimiterMagnitudeRPM);
-        ImGui::Checkbox("Is Rev Limiting", (bool*)&engine->isRevLimiting);
-        ImGui::DragFloat("Full Load Torque", &engine->fullLoadTorque);
-        ImGui::DragFloat("Lowest Max Torque", &engine->lowestMaxTorque);
-        ImGui::DragFloat("Engine Min Noise", &engine->engineMinNoise);
-        ImGui::DragFloat("Engine Damage Noise Scale", &engine->engineDamageNoiseScale);
-        ImGui::DragFloat("Engine Max Damage Torque Factor", &engine->engineMaxDamageTorqueFactor);
-        ImGui::DragFloat("Min RPM", &engine->minRPM);
-        ImGui::DragFloat("Optimal RPM", &engine->optRPM);
-        ImGui::DragFloat("Max Torque", &engine->maxTorque);
-        ImGui::DragFloat("Torque Factor at Min RPM", &engine->torqueFactorAtMinRPM);
-        ImGui::DragFloat("Torque Factor at Max RPM", &engine->torqueFactorAtMaxRPM);
-        ImGui::DragFloat("Resistance Factor at Min RPM", &engine->resistanceFactorAtMinRPM);
-        ImGui::DragFloat("Resistance Factor at Optimal RPM", &engine->resistanceFactorAtOptRPM);
-        ImGui::DragFloat("Resistance Factor at Max RPM", &engine->resistanceFactorAtMaxRPM);
-        ImGui::DragFloat("Clutch Slop RPM", &engine->clutchSlipRPM);
-        ImGui::DragFloat("Max RPM", &engine->maxRPM);
-        ImGui::DragFloat("Overdrive Max RPM", &engine->overdriveMaxRPM);
-        ImGui::Checkbox("Overdrive Active", (bool*)&engine->isOverdriveActive);
+        auto engine = pfxBike->landEngineResourceCachePtr.data;
+        ImGui::DragFloat("resistance_at_min_rpm", &engine->resistance_at_min_rpm);
+        ImGui::DragFloat("resistance_at_max_rpm", &engine->resistance_at_max_rpm);
+        ImGui::DragFloat("resistance_at_optimal_rpm", &engine->resistance_at_optimal_rpm);
+        ImGui::DragFloat("rev_limiter_rpm_drop", &engine->rev_limiter_rpm_drop);
+        ImGui::DragFloat("max_rpm", &engine->max_rpm);
+        ImGui::DragFloat("min_rpm", &engine->min_rpm);
+        ImGui::DragFloat("optimal_rpm", &engine->optimal_rpm);
+        ImGui::DragFloat("torque_factor_at_max_rpm", &engine->torque_factor_at_max_rpm);
+        ImGui::DragFloat("torque_factor_at_min_rpm", &engine->torque_factor_at_min_rpm);
+        ImGui::DragFloat("torque_factor_at_optimal_rpm", &engine->torque_factor_at_optimal_rpm);
+        ImGui::DragFloat("clutch_slip_rpm", &engine->clutch_slip_rpm);
+        ImGui::DragFloat("engine_min_noise", &engine->engine_min_noise);
+        ImGui::DragFloat("engine_damage_noise_scale", &engine->engine_damage_noise_scale);
+        ImGui::DragFloat("engine_max_damage_torque", &engine->engine_max_damage_torque);
         ImGui::TreePop();
+
+        pfxBike->ApplyLandEngine(*pfxBike->landEngineResourceCachePtr.data);
     }
 
     if (ImGui::CollapsingHeader("Engine Transmission")) {
         ImGui::TreePush("Engine Transmission");
-        auto engineTransmission = pfxBike->landVehicleTransmission;
 
-        ImGui::SliderFloat("Forward Torque Ratio", &engineTransmission->transmissionProperties.forwardTorqueRatio, 0, 128);
-        ImGui::SliderFloat("Low Gear Forward Torque Ratio", &engineTransmission->transmissionProperties.lowGearForwardTorqueRatio, 0, 128);
-        ImGui::SliderFloat("Max Transmission RPM", &engineTransmission->transmissionProperties.maxTransmissionRPM, 0, 128);
-        ImGui::SliderFloat("Max Reverse Transmission RPM", &engineTransmission->transmissionProperties.maxReversingTransmissionRPM, 0, 128);
-        ImGui::SliderFloat("Target Cruise RPM", &engineTransmission->transmissionProperties.targetCruiseRPM, 0, 50000);
-        ImGui::SliderFloat("Decay Time to Cruise RPM", &engineTransmission->transmissionProperties.decayTimeToCruiseRPM, -10, 128);
-        ImGui::SliderFloat("Low Gearing Primary Transmission Ratio", &engineTransmission->transmissionProperties.lowGearingPrimaryTransmissionRatio, -10, 128);
-        ImGui::SliderFloat("Downshift RPM", &engineTransmission->transmissionProperties.downshiftRPM, 0, 50000);
-        ImGui::SliderFloat("Upshift RPM", &engineTransmission->transmissionProperties.upshiftRPM, 0, 50000);
-        ImGui::SliderFloat("Primary Transmission Ratio", &engineTransmission->transmissionProperties.primaryTransmissionRatio, 0, 128);
-        for (int i = 0; i < engineTransmission->transmissionProperties.wheelsTorqueRatio.size; ++i) {
+        ImGui::DragInt("gears", &pfxBike->transmissionResourceCachePtr.data->gears);
+        ImGui::DragInt("nitrous_gears", &pfxBike->transmissionResourceCachePtr.data->nitrous_gears);
+
+        ImGui::DragInt("sequential", &pfxBike->transmissionResourceCachePtr.data->sequential);
+        ImGui::DragInt("manual_clutch", &pfxBike->transmissionResourceCachePtr.data->manual_clutch);
+
+        ImGui::DragFloat("manual_clutch_blend_rpm", &pfxBike->transmissionResourceCachePtr.data->manual_clutch_blend_rpm);
+        ImGui::DragFloat("manual_clutch_blend_time", &pfxBike->transmissionResourceCachePtr.data->manual_clutch_blend_time);
+        ImGui::DragFloat("forward_ratio_percentage", &pfxBike->transmissionResourceCachePtr.data->forward_ratio_percentage);
+        ImGui::DragFloat("low_gear_forward_ratio_pct", &pfxBike->transmissionResourceCachePtr.data->low_gear_forward_ratio_pct);
+
+        ImGui::DragFloat("top_speed", &pfxBike->transmissionResourceCachePtr.data->top_speed);
+        ImGui::DragFloat("low_gears_final_drive", &pfxBike->transmissionResourceCachePtr.data->low_gears_final_drive);
+        ImGui::DragFloat("final_drive", &pfxBike->transmissionResourceCachePtr.data->final_drive);
+        ImGui::DragFloat("reverse_gear_ratio", &pfxBike->transmissionResourceCachePtr.data->reverse_gear_ratio);
+        ImGui::DragFloat("clutch_delay", &pfxBike->transmissionResourceCachePtr.data->clutch_delay);
+        ImGui::DragFloat("decay_time_to_cruise_rpm", &pfxBike->transmissionResourceCachePtr.data->decay_time_to_cruise_rpm);
+        ImGui::DragFloat("target_cruise_rpm", &pfxBike->transmissionResourceCachePtr.data->target_cruise_rpm);
+
+        for (int i = 0; i < pfxBike->transmissionResourceCachePtr.data->gears; ++i) {
             char wheel_text[100];
             sprintf(wheel_text, "Wheel Torque Ratio %d", i);
             ImGui::TreePush(wheel_text);
-            ImGui::SliderFloat(wheel_text, &engineTransmission->transmissionProperties.wheelsTorqueRatio.Data[i], 0, 128);
+            ImGui::SliderFloat(wheel_text, &pfxBike->transmissionResourceCachePtr.data->gear_ratios[i], 0, 128);
             ImGui::TreePop();
         }
         ImGui::TreePop();
+
+        pfxBike->ApplyTransmission(*pfxBike->transmissionResourceCachePtr.data);
     }
 
     if (ImGui::CollapsingHeader("Suspension")) {
@@ -138,26 +137,28 @@ void DoMotorBikeHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVeh
     if (ImGui::CollapsingHeader("Brakes")) {
         ImGui::TreePush("Brakes Front");
         ImGui::Text("Front");
-        ImGui::Checkbox("Handbrake", (bool*)&pfxBike->brakesProperties->front.handbrake);
-        ImGui::DragFloat("Max Brake Torque", &pfxBike->brakesProperties->front.max_brake_torque);
-        ImGui::DragFloat("Time To Block", &pfxBike->brakesProperties->front.min_time_to_block);
+        ImGui::Checkbox("Handbrake", (bool*)&pfxBike->brakesResourceCachePtr.data->front.handbrake);
+        ImGui::DragFloat("Max Brake Torque", &pfxBike->brakesResourceCachePtr.data->front.max_brake_torque);
+        ImGui::DragFloat("Time To Block", &pfxBike->brakesResourceCachePtr.data->front.min_time_to_block);
         ImGui::TreePop();
         ImGui::Separator();
         ImGui::Text("Rear");
         ImGui::TreePush("Brakes Rear");
-        ImGui::Checkbox("Handbrake", (bool*)&pfxBike->brakesProperties->rear.handbrake);
-        ImGui::DragFloat("Max Brake Torque", &pfxBike->brakesProperties->rear.max_brake_torque);
-        ImGui::DragFloat("Time To Block", &pfxBike->brakesProperties->rear.min_time_to_block);
+        ImGui::Checkbox("Handbrake", (bool*)&pfxBike->brakesResourceCachePtr.data->rear.handbrake);
+        ImGui::DragFloat("Max Brake Torque", &pfxBike->brakesResourceCachePtr.data->rear.max_brake_torque);
+        ImGui::DragFloat("Time To Block", &pfxBike->brakesResourceCachePtr.data->rear.min_time_to_block);
+        pfxBike->ApplyBrakes(*pfxBike->brakesResourceCachePtr.data);
         ImGui::TreePop();
     }
 
     if (ImGui::CollapsingHeader("Aerodynamics")) {
         ImGui::TreePush("Aerodynamic");
-        ImGui::DragFloat("Air Density", &pfxBike->landAerodynamics->air_density);
-        ImGui::DragFloat("Frontal Area", &pfxBike->landAerodynamics->frontal_area);
-        ImGui::DragFloat("Drag Coefficient", &pfxBike->landAerodynamics->drag_coefficient);
-        ImGui::DragFloat("Top Speed Drag Coefficient", &pfxBike->landAerodynamics->top_speed_drag_coefficient);
-        ImGui::DragFloat("Lift Coefficient", &pfxBike->landAerodynamics->lift_coefficient);
+        ImGui::DragFloat("Air Density", &pfxBike->landAerodynamicsResourceCachePtr.data->air_density);
+        ImGui::DragFloat("Frontal Area", &pfxBike->landAerodynamicsResourceCachePtr.data->frontal_area);
+        ImGui::DragFloat("Drag Coefficient", &pfxBike->landAerodynamicsResourceCachePtr.data->drag_coefficient);
+        ImGui::DragFloat("Top Speed Drag Coefficient", &pfxBike->landAerodynamicsResourceCachePtr.data->top_speed_drag_coefficient);
+        ImGui::DragFloat("Lift Coefficient", &pfxBike->landAerodynamicsResourceCachePtr.data->lift_coefficient);
+        pfxBike->ApplyLandAerodynamics(*pfxBike->landAerodynamicsResourceCachePtr.data);
         ImGui::TreePop();
     }
 
@@ -216,22 +217,22 @@ void DoMotorBikeHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVeh
         ImGui::DragFloat("wheel_drift_aligning_strength", &pfxBike->motorbikeSteeringResourceCachePtr.data->land_steering.wheel_drift_aligning_strength);
 
         ImGui::Text("Wheelie");
-        ImGui::TreePush("Steering Wheelie");
-        ImGui::DragFloat("max_lean_angle_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.max_lean_angle_deg);
-        ImGui::DragFloat("input_reactiveness", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.input_reactiveness);
-        ImGui::DragFloat("dead_zone", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.dead_zone);
-        ImGui::DragFloat("min_speed", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.min_speed);
-        ImGui::DragFloat("wheelie_angle_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_angle_deg);
-        ImGui::DragFloat("wheelie_torque", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_torque);
-        ImGui::DragFloat("wheelie_center_of_mass_offset x", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_center_of_mass_offset[0]);
-        ImGui::DragFloat("wheelie_center_of_mass_offset y", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_center_of_mass_offset[1]);
-        ImGui::DragFloat("wheelie_center_of_mass_offset z", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_center_of_mass_offset[2]);
-        ImGui::DragFloat("nosie_angle_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_angle_deg);
-        ImGui::DragFloat("nosie_torque", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_torque);
-        ImGui::DragFloat("nosie_center_of_mass_offset x", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_center_of_mass_offset[0]);
-        ImGui::DragFloat("nosie_center_of_mass_offset y", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_center_of_mass_offset[1]);
-        ImGui::DragFloat("nosie_center_of_mass_offset z", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_center_of_mass_offset[2]);
-        ImGui::TreePop();
+            ImGui::TreePush("Steering Wheelie");
+                ImGui::DragFloat("max_lean_angle_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.max_lean_angle_deg);
+                ImGui::DragFloat("input_reactiveness", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.input_reactiveness);
+                ImGui::DragFloat("dead_zone", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.dead_zone);
+                ImGui::DragFloat("min_speed", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.min_speed);
+                ImGui::DragFloat("wheelie_angle_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_angle_deg);
+                ImGui::DragFloat("wheelie_torque", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_torque);
+                ImGui::DragFloat("wheelie_center_of_mass_offset x", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_center_of_mass_offset[0]);
+                ImGui::DragFloat("wheelie_center_of_mass_offset y", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_center_of_mass_offset[1]);
+                ImGui::DragFloat("wheelie_center_of_mass_offset z", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.wheelie_center_of_mass_offset[2]);
+                ImGui::DragFloat("nosie_angle_deg", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_angle_deg);
+                ImGui::DragFloat("nosie_torque", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_torque);
+                ImGui::DragFloat("nosie_center_of_mass_offset x", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_center_of_mass_offset[0]);
+                ImGui::DragFloat("nosie_center_of_mass_offset y", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_center_of_mass_offset[1]);
+                ImGui::DragFloat("nosie_center_of_mass_offset z", &pfxBike->motorbikeSteeringResourceCachePtr.data->wheelie.nosie_center_of_mass_offset[2]);
+            ImGui::TreePop();
         ImGui::TreePop();
 
         pfxBike->ApplyMotorbikeSteering(*pfxBike->motorbikeSteeringResourceCachePtr.data);

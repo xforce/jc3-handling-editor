@@ -27,23 +27,46 @@ void DoBoatHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle)
 
     if (ImGui::CollapsingHeader("Propellers")) {
         ImGui::TreePush("Propellers");
-        ImGui::DragFloat("max_thrust", &pfxBoat->propellersProperties->max_thrust);
-        ImGui::DragFloat("max_rpm", &pfxBoat->propellersProperties->max_rpm);
-        ImGui::DragFloat("max_reverse_rpm", &pfxBoat->propellersProperties->max_reverse_rpm);
-        ImGui::DragFloat("diameter", &pfxBoat->propellersProperties->diameter);
-        ImGui::DragFloat("pitch", &pfxBoat->propellersProperties->pitch);
+        ImGui::DragFloat("max_thrust", &pfxBoat->propellersResourceCachePtr.data->max_thrust);
+        ImGui::DragFloat("max_rpm", &pfxBoat->propellersResourceCachePtr.data->max_rpm);
+        ImGui::DragFloat("max_reverse_rpm", &pfxBoat->propellersResourceCachePtr.data->max_reverse_rpm);
+        ImGui::DragFloat("diameter", &pfxBoat->propellersResourceCachePtr.data->diameter);
+        ImGui::DragFloat("pitch", &pfxBoat->propellersResourceCachePtr.data->pitch);
         ImGui::TreePush("Docking Controls");
-        ImGui::DragFloat("optimal_docking_speed_ms", &pfxBoat->propellersProperties->docking_controls.optimal_docking_speed_ms);
-        ImGui::DragFloat("max_docking_speed_ms", &pfxBoat->propellersProperties->docking_controls.max_docking_speed_ms);
-        ImGui::DragFloat("max_docking_control_throttle", &pfxBoat->propellersProperties->docking_controls.max_docking_control_throttle);
-        ImGui::DragFloat("docking_yaw_throttle_limit", &pfxBoat->propellersProperties->docking_controls.docking_yaw_throttle_limit);
-        //ImGui::TreePush("Propellers...");
-        //if (ImGui::CollapsingHeader("Propeller 1")) {
-        //    ImGui::DragFloat("meow", &pfxBoat->propellersProperties->docking_controls.optimal_docking_speed_ms);
-        //    ImGui::DragFloat("meow", &pfxBoat->propellersProperties->docking_controls.max_docking_speed_ms);
-        //    ImGui::DragFloat("meow", &pfxBoat->propellersProperties->docking_controls.max_docking_control_throttle);
-        //    ImGui::DragFloat("meow", &pfxBoat->propellersProperties->docking_controls.docking_yaw_throttle_limit);
-        //}
+        ImGui::DragFloat("optimal_docking_speed_ms", &pfxBoat->propellersResourceCachePtr.data->docking_controls.optimal_docking_speed_ms);
+        ImGui::DragFloat("max_docking_speed_ms", &pfxBoat->propellersResourceCachePtr.data->docking_controls.max_docking_speed_ms);
+        ImGui::DragFloat("max_docking_control_throttle", &pfxBoat->propellersResourceCachePtr.data->docking_controls.max_docking_control_throttle);
+        ImGui::DragFloat("docking_yaw_throttle_limit", &pfxBoat->propellersResourceCachePtr.data->docking_controls.docking_yaw_throttle_limit);
+        ImGui::TreePop();
+        ImGui::TreePop();
+    }
+
+    if (pfxBoat->finsResourceCachePtr.data && ImGui::CollapsingHeader("Fins")) {
+        ImGui::TreePush("Fins");
+        ImGui::DragFloat("reference_speed_ms", &pfxBoat->finsResourceCachePtr.data->reference_speed_ms);
+        ImGui::DragFloat("pressure_drag", &pfxBoat->finsResourceCachePtr.data->pressure_drag);
+        ImGui::DragFloat("pressure_drag2", &pfxBoat->finsResourceCachePtr.data->pressure_drag2);
+        ImGui::TreePop();
+    }
+
+    if (ImGui::CollapsingHeader("Steering")) {
+        ImGui::TreePush("Steering");
+        ImGui::DragFloat("acceleration_smoothing", &pfxBoat->boatSteeringResourceCachePtr.data->acceleration_smoothing);
+        if (ImGui::CollapsingHeader("Steering Filter")) {
+            ImGui::TreePush("Steering Filter");
+
+            auto &steeringFilter = pfxBoat->boatSteeringResourceCachePtr.data->steeringfilter;
+            ImGui::DragFloat("t_to_full_input_min_speed_s", &steeringFilter.t_to_full_input_min_speed_s);
+            ImGui::DragFloat("t_to_full_input_max_speed_s", &steeringFilter.t_to_full_input_max_speed_s);
+            ImGui::DragFloat("input_start_speed_kmph", &steeringFilter.input_start_speed_kmph);
+            ImGui::DragFloat("input_max_speed_kmph", &steeringFilter.input_max_speed_kmph);
+            ImGui::DragFloat("counterinput_speed_factor", &steeringFilter.counterinput_speed_factor);
+            ImGui::DragFloat("zeroinput_speed_factor", &steeringFilter.zeroinput_speed_factor);
+            ImGui::DragFloat("input_speedcurve_falloff", &steeringFilter.input_speedcurve_falloff);
+
+            pfxBoat->ApplyBoatSteering(*pfxBoat->boatSteeringResourceCachePtr.data);
+            ImGui::TreePop();
+        }
         ImGui::TreePop();
     }
 }
