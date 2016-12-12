@@ -18,3 +18,8 @@ or
 * Either copy or symlink the resulting DLL (in `out\Release`) to your `Just Cause 3\mods` directory
 	* If Just Cause 3 Mod Loader is not already installed, acquire a copy (should be named `dinput8.dll`) and copy it into your `Just Cause 3` directory
 * Launch game and toggle menu with F8, spawn menu is on F9
+
+
+## Screenshots
+![meow1](https://i.imgur.com/1mZhMWi.jpg "Car Handling Settings 1")
+![meow2](https://i.imgur.com/VeP6dC5.jpg "Car Handling Settings 2")
