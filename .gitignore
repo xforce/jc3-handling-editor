@@ -31,3 +31,5 @@
 
 out/
 *.pyc
+config.gypi
+config.mk
