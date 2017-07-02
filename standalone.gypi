@@ -163,9 +163,6 @@
           }],
         ],
       },
-      'Optdebug': {
-        'inherit_from': [ 'DebugBaseCommon', 'DebugBase2' ],
-      },
       'Debug': {
         # Xcode insists on this empty entry.
       },

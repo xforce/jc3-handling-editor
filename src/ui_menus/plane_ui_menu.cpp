@@ -9,7 +9,60 @@
 
 #include <jc3/entities/pfx/air_audio.h>
 
-void DoPlaneHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
+nlohmann::json PlaneSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle) {
+    auto pfxVehicle = vehicle->PfxVehicle;
+    assert(pfxVehicle->GetType() == jc3::PfxType::Airplane && "This vehicle is not a car");
+    auto pfxAirplane = static_cast<jc3::CPfxAirPlane*>(pfxVehicle);
+
+    namespace json = nlohmann;
+    json::json settings_json;
+
+    settings_json["airplane"] = {
+        { "engine",{
+            { "max_thrust", pfxAirplane->airEngineResourceCachePtr.data->max_thrust },
+            { "max_thrust_acceleration", pfxAirplane->airEngineResourceCachePtr.data->max_thrust_acceleration },
+            { "min_thrust", pfxAirplane->airEngineResourceCachePtr.data->min_thrust },
+            { "run_thrust", pfxAirplane->airEngineResourceCachePtr.data->run_thrust },
+            { "taxiing_input_threshold", pfxAirplane->airEngineResourceCachePtr.data->taxiing_input_threshold },
+            { "taxiing_max_thrust", pfxAirplane->airEngineResourceCachePtr.data->taxiing_max_thrust },
+            { "taxiing_top_speed", pfxAirplane->airEngineResourceCachePtr.data->taxiing_top_speed },
+        } },
+        { "air_steering",{
+            { "referenceMaxSpeedKPH", pfxAirplane->airSteeringResourceCachePtr.data->referenceMaxSpeedKPH },
+            { "referenceMinSpeedKPH", pfxAirplane->airSteeringResourceCachePtr.data->referenceMinSpeedKPH },
+            { "max_steering_angle", pfxAirplane->airSteeringResourceCachePtr.data->max_steering_angle },
+            { "acceleration_smoothing", pfxAirplane->airSteeringResourceCachePtr.data->acceleration_smoothing },
+            { "pitch_return", pfxAirplane->airSteeringResourceCachePtr.data->pitch_return },
+            { "roll_return", pfxAirplane->airSteeringResourceCachePtr.data->roll_return },
+            { "rollAxisTiming",{
+                { "timeToMaxInputAtMinSpeed_s", pfxAirplane->airSteeringResourceCachePtr.data->rollAxisTiming.timeToMaxInputAtMinSpeed_s },
+                { "timeToMaxInputAtMaxSpeed_s", pfxAirplane->airSteeringResourceCachePtr.data->rollAxisTiming.timeToMaxInputAtMaxSpeed_s },
+                { "centeringInputTimeFactor", pfxAirplane->airSteeringResourceCachePtr.data->rollAxisTiming.centeringInputTimeFactor },
+                { "counterInputTimeFactor", pfxAirplane->airSteeringResourceCachePtr.data->rollAxisTiming.counterInputTimeFactor },
+            } },
+            { "pitchAxisTiming",{
+                { "timeToMaxInputAtMinSpeed_s", pfxAirplane->airSteeringResourceCachePtr.data->pitchAxisTiming.timeToMaxInputAtMinSpeed_s },
+                { "timeToMaxInputAtMaxSpeed_s", pfxAirplane->airSteeringResourceCachePtr.data->pitchAxisTiming.timeToMaxInputAtMaxSpeed_s },
+                { "centeringInputTimeFactor", pfxAirplane->airSteeringResourceCachePtr.data->pitchAxisTiming.centeringInputTimeFactor },
+                { "counterInputTimeFactor", pfxAirplane->airSteeringResourceCachePtr.data->pitchAxisTiming.counterInputTimeFactor },
+            } },
+            { "yawAxisTiming",{
+                { "timeToMaxInputAtMinSpeed_s", pfxAirplane->airSteeringResourceCachePtr.data->yawAxisTiming.timeToMaxInputAtMinSpeed_s },
+                { "timeToMaxInputAtMaxSpeed_s", pfxAirplane->airSteeringResourceCachePtr.data->yawAxisTiming.timeToMaxInputAtMaxSpeed_s },
+                { "centeringInputTimeFactor", pfxAirplane->airSteeringResourceCachePtr.data->yawAxisTiming.centeringInputTimeFactor },
+                { "counterInputTimeFactor", pfxAirplane->airSteeringResourceCachePtr.data->yawAxisTiming.counterInputTimeFactor },
+            } },
+        } }
+    };
+
+    return settings_json;
+}
+
+void PlaneSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json) {
+
+}
+
+void DoPlaneHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
     auto pfxAirplane = static_cast<jc3::CPfxAirPlane*>(pfxVehicle);
 
     using json = nlohmann::json;

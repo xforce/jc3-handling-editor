@@ -5,5 +5,5 @@
                        'libraries': []},
   'variables': { 'deps_path': 'deps',
                  'host_arch': 'x64',
-                 'python': 'C:\\Python27\\python.exe',
+                 'python': 'C:\\depot_tools\\python276_bin\\python.exe',
                  'target_arch': 'x64'}}

@@ -365,15 +365,26 @@ struct VehicleUIItem
 static VehicleUIItem currentVehicleItem;
 
 jc3::CGameObject * lastVehicle = nullptr;
-nlohmann::json CarSettingsToJson(jc3::CVehicle * vehicle);
-void CarSettingsFromJson(jc3::CVehicle * vehicle, nlohmann::json settings_json);
-#define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
-void DoCarHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
-void DoMotorBikeHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
-void DoBoatHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
-void DoHelicopterHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
-void DoPlaneHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle);
+nlohmann::json CarSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle);
+nlohmann::json BikeSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle);
+nlohmann::json HelicopterSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle);
+nlohmann::json BoatSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle);
+nlohmann::json PlaneSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle);
+
+void CarSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json);
+void BikeSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json);
+void HelicopterSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json);
+void BoatSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json);
+void PlaneSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json);
+
+void DoCarHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle);
+void DoMotorBikeHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle);
+void DoBoatHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle);
+void DoHelicopterHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle);
+void DoPlaneHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle);
+
+#define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
 void SetupImGuiStyle2();
 void HookZwSetInformationThread(bool hotReload);
@@ -388,7 +399,7 @@ static std::unordered_map<std::string, std::vector<std::string>> spawnMenuweapon
 static std::unordered_map<std::string, std::vector<uint32_t>> spawnMenuweaponHashes;
 
 void DoSpawnMenu() {
-    ImGui::Begin("Spawn Menu 435345");
+    ImGui::Begin("Spawn Menu");
 
     static int curIndex = 0;
     static bool spawnOnListItemClick = false;
@@ -586,11 +597,11 @@ BOOL WINAPI DllMain(
 
 					// We don't want it to reset if you get out of the current vehicle and then get back into the same vehicle
 					// TOOD(xforce): Improve this so it stores it persistent for the vehicle you were in
-					if (vehicle && lastVehicle != vehicle) {
-						lastVehicle = vehicle;
+					if (vehicle && lastVehicle != vehicle.get()) {
+						lastVehicle = vehicle.get();
 						currentVehicleItem.Reset();
 						if (vehicle) {
-							auto real_vehicle = static_cast<jc3::CVehicle*>(vehicle);
+                            auto real_vehicle = boost::static_pointer_cast<jc3::CVehicle>(vehicle);
 
 							auto name_hash = real_vehicle->GetNameHash();
 
@@ -614,7 +625,8 @@ BOOL WINAPI DllMain(
 					}
 
 					if (vehicle) {
-						auto real_vehicle = static_cast<jc3::CVehicle*>(vehicle);
+						auto real_vehicle = boost::static_pointer_cast<jc3::CVehicle>(vehicle);
+                        auto pfxVehicle = real_vehicle->PfxVehicle;
 
 						bool show_save_as = false;
 
@@ -627,7 +639,21 @@ BOOL WINAPI DllMain(
 								nlohmann::json settings_json;
 								testFile >> settings_json;
 								testFile.close();
-								CarSettingsFromJson(real_vehicle, settings_json);
+                                if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Car) {
+                                    CarSettingsFromJson(real_vehicle, settings_json);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::MotorBike) {
+                                    BikeSettingsFromJson(real_vehicle, pfxVehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Helicopter) {
+                                    HelicopterSettingsFromJson(real_vehicle, pfxVehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Boat) {
+                                    BoatSettingsFromJson(real_vehicle, pfxVehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Airplane) {
+                                    PlaneSettingsFromJson(real_vehicle, pfxVehicle);
+                                }
 							}
 						}
                         
@@ -643,7 +669,22 @@ BOOL WINAPI DllMain(
 								char file_name[256];
 								sprintf(file_name, "%s.json", profile_name.c_str());
 								std::ofstream testFile(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName).append(file_name));
-								testFile << std::setw(4) << CarSettingsToJson(real_vehicle);
+                                if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Car) {
+                                    testFile << std::setw(4) << CarSettingsToJson(real_vehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::MotorBike) {
+                                    testFile << std::setw(4) << BikeSettingsToJson(real_vehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Helicopter) {
+                                    testFile << std::setw(4) << HelicopterSettingsToJson(real_vehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Boat) {
+                                    testFile << std::setw(4) << BoatSettingsToJson(real_vehicle);
+                                }
+                                else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Airplane) {
+                                    testFile << std::setw(4) << PlaneSettingsToJson(real_vehicle);
+                                }
+								
 								testFile.close();
 							}
 						}
@@ -677,7 +718,21 @@ BOOL WINAPI DllMain(
 									char file_name[256];
 									sprintf(file_name, "%s.json", buf);
 									std::ofstream testFile(fs::path(GetProfilesSavePath()).append(currentVehicleItem.modelName).append(file_name));
-									testFile << std::setw(4) << CarSettingsToJson(real_vehicle);
+                                    if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Car) {
+                                        testFile << std::setw(4) << CarSettingsToJson(real_vehicle);
+                                    }
+                                    else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::MotorBike) {
+                                        testFile << std::setw(4) << BikeSettingsToJson(real_vehicle);
+                                    }
+                                    else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Helicopter) {
+                                        testFile << std::setw(4) << HelicopterSettingsToJson(real_vehicle);
+                                    }
+                                    else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Boat) {
+                                        testFile << std::setw(4) << BoatSettingsToJson(real_vehicle);
+                                    }
+                                    else if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Airplane) {
+                                        testFile << std::setw(4) << PlaneSettingsToJson(real_vehicle);
+                                    }
 									testFile.close();
 									ImGui::CloseCurrentPopup();
 								}
@@ -687,8 +742,6 @@ BOOL WINAPI DllMain(
 								ImGui::EndPopup();
 							}
 						}
-
-						auto pfxVehicle = static_cast<jc3::CVehicle*>(vehicle)->PfxVehicle;
 
 						if (pfxVehicle && pfxVehicle->GetType() == jc3::PfxType::Car) {
 							DoCarHandlingUI(real_vehicle, pfxVehicle);

@@ -7,7 +7,56 @@
 
 #include <jc3/hashes/vehicles.h>
 
-void DoBoatHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
+nlohmann::json BoatSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle) {
+    auto pfxVehicle = vehicle->PfxVehicle;
+    assert(pfxVehicle->GetType() == jc3::PfxType::Boat && "This vehicle is not a boat");
+    auto pfxBoat = static_cast<jc3::CPfxBoat*>(pfxVehicle);
+
+    namespace json = nlohmann;
+    json::json settings_json;
+
+    auto &steeringFilter = pfxBoat->boatSteeringResourceCachePtr.data->steeringfilter;
+    settings_json["boat"] = {
+        { "propellers",{
+            { "max_thrust", pfxBoat->propellersResourceCachePtr.data->max_thrust },
+            { "max_rpm", pfxBoat->propellersResourceCachePtr.data->max_rpm },
+            { "max_reverse_rpm", pfxBoat->propellersResourceCachePtr.data->max_reverse_rpm },
+            { "diameter", pfxBoat->propellersResourceCachePtr.data->diameter },
+            { "pitch", pfxBoat->propellersResourceCachePtr.data->pitch },
+            { "docking_controls",{
+                { "optimal_docking_speed_ms", pfxBoat->propellersResourceCachePtr.data->docking_controls.optimal_docking_speed_ms },
+                { "max_docking_speed_ms", pfxBoat->propellersResourceCachePtr.data->docking_controls.max_docking_speed_ms },
+                { "max_docking_control_throttle", pfxBoat->propellersResourceCachePtr.data->docking_controls.max_docking_control_throttle },
+                { "docking_yaw_throttle_limit", pfxBoat->propellersResourceCachePtr.data->docking_controls.docking_yaw_throttle_limit },
+            } },
+        } },
+        { "fins",{
+            { "reference_speed_ms", pfxBoat->finsResourceCachePtr.data->reference_speed_ms },
+            { "pressure_drag", pfxBoat->finsResourceCachePtr.data->pressure_drag },
+            { "pressure_drag2", pfxBoat->finsResourceCachePtr.data->pressure_drag2 },
+        } },
+        { "steering",{
+            { "acceleration_smoothing", pfxBoat->boatSteeringResourceCachePtr.data->acceleration_smoothing },
+            { "steering_filter",{
+                { "t_to_full_input_min_speed_s", steeringFilter.t_to_full_input_min_speed_s },
+                { "t_to_full_input_max_speed_s", steeringFilter.t_to_full_input_max_speed_s },
+                { "input_start_speed_kmph", steeringFilter.input_start_speed_kmph },
+                { "input_max_speed_kmph", steeringFilter.input_max_speed_kmph },
+                { "counterinput_speed_factor", steeringFilter.counterinput_speed_factor },
+                { "zeroinput_speed_factor", steeringFilter.zeroinput_speed_factor },
+                { "input_speedcurve_falloff", steeringFilter.input_speedcurve_falloff },
+            } },
+        } },
+    };
+
+    return settings_json;
+}
+
+void BoatSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json) {
+
+}
+
+void DoBoatHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
     auto pfxBoat = static_cast<jc3::CPfxBoat*>(pfxVehicle);
 
     using json = nlohmann::json;

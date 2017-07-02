@@ -7,7 +7,129 @@
 
 #include <jc3/hashes/vehicles.h>
 
-void DoHelicopterHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
+nlohmann::json HelicopterSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle) {
+    auto pfxVehicle = vehicle->PfxVehicle;
+    assert(pfxVehicle->GetType() == jc3::PfxType::Helicopter && "This vehicle is not a car");
+    auto pfxHelicopter = static_cast<jc3::CPfxHelicopter*>(pfxVehicle);
+
+    namespace json = nlohmann;
+    json::json settings_json;
+
+    auto model = pfxHelicopter->helicopterModelResourceCachePointer.data;
+    auto steering = pfxHelicopter->helicopterSteeringResourceCachePtr.data;
+    settings_json["helicopter"] = {
+        { "model",{
+            { "center_of_torques_x", model->center_of_torques_x },
+            { "center_of_torques_y", model->center_of_torques_y },
+            { "center_of_torques_z", model->center_of_torques_z },
+            { "altitude_input_power", model->altitude_input_power },
+            { "yaw_input_power", model->yaw_input_power },
+            { "pitch_input_power", model->pitch_input_power },
+            { "roll_input_power", model->roll_input_power },
+            { "pitch_input_dead_zone", model->pitch_input_dead_zone },
+            { "t_to_full_yaw_s", model->t_to_full_yaw_s },
+            { "max_speed_t_to_full_yaw_s", model->max_speed_t_to_full_yaw_s },
+            { "bank_start_velocity_kmph", model->bank_start_velocity_kmph },
+            { "bank_max_velocity_kmph", model->bank_max_velocity_kmph },
+            { "min_speed_dive_kmph", model->min_speed_dive_kmph },
+            { "max_speed_dive_kmph", model->max_speed_dive_kmph },
+            { "add_dive_pitch_deg", model->add_dive_pitch_deg },
+            { "add_climb_pitch_deg", model->add_climb_pitch_deg },
+            { "max_roll_input_for_climb", model->max_roll_input_for_climb },
+            { "climb_speed_low_speed_kmph", model->climb_speed_low_speed_kmph },
+            { "dive_speed_low_speed_kmph", model->dive_speed_low_speed_kmph },
+            { "min_altitude_input", model->min_altitude_input },
+            { "unsettled_altitude_gain_climb", model->unsettled_altitude_gain_climb },
+            { "unsettled_altitude_gain_dive", model->unsettled_altitude_gain_dive },
+            { "max_diving_gs", model->max_diving_gs },
+            { "max_climbing_gs", model->max_climbing_gs },
+            { "add_force_forward_power", model->add_force_forward_power },
+            { "add_force_lateral_power", model->add_force_lateral_power },
+            { "trim_input_gain", model->trim_input_gain },
+            { "forward_drag", model->forward_drag },
+            { "lateral_drag", model->lateral_drag },
+            { "vertical_drag", model->vertical_drag },
+            { "tail_lateral_drag", model->tail_lateral_drag },
+            { "tail_vertical_drag", model->tail_vertical_drag },
+            { "angular_drag", model->angular_drag },
+            { "low_speed_max_drag_yaw_speed", model->low_speed_max_drag_yaw_speed },
+            { "high_speed_max_drag_yaw_speed", model->high_speed_max_drag_yaw_speed },
+            { "yaw_drag_no_input", model->yaw_drag_no_input },
+            { "forward_drag_no_input", model->forward_drag_no_input },
+            { "lateral_drag_no_input", model->lateral_drag_no_input },
+            { "vertical_drag_no_input", model->vertical_drag_no_input },
+            { "tail_distance_to_com_m", model->tail_distance_to_com_m },
+            { "add_forward_force", model->add_forward_force },
+            { "add_right_force", model->add_right_force },
+            { "add_lateral_factor_pull_up", model->add_lateral_factor_pull_up },
+            { "max_roll_deg", model->max_roll_deg },
+            { "add_bank_roll_deg", model->add_bank_roll_deg },
+            { "add_bank_roll_pull_up_deg", model->add_bank_roll_pull_up_deg },
+            { "max_pitch_low_speed_deg", model->max_pitch_low_speed_deg },
+            { "max_pitch_high_speed_deg", model->max_pitch_high_speed_deg },
+            { "counter_pitch_angle_deg", model->counter_pitch_angle_deg },
+            { "counter_pitch_speed_kmph", model->counter_pitch_speed_kmph },
+            { "roll_p", model->roll_p },
+            { "roll_i", model->roll_i },
+            { "roll_d", model->roll_d },
+            { "roll_max_amplitude", model->roll_max_amplitude },
+            { "pitch_p", model->pitch_p },
+            { "pitch_i", model->pitch_i },
+            { "pitch_d", model->pitch_d },
+            { "pitch_max_amplitude", model->pitch_max_amplitude },
+            { "yaw_p", model->yaw_p },
+            { "yaw_i", model->yaw_i },
+            { "yaw_d", model->yaw_d },
+            { "yaw_max_amplitude", model->yaw_max_amplitude },
+            { "low_speed_altitude_p", model->low_speed_altitude_p },
+            { "low_speed_altitude_i", model->low_speed_altitude_i },
+            { "low_speed_altitude_d", model->low_speed_altitude_d },
+            { "high_speed_altitude_p", model->high_speed_altitude_p },
+            { "high_speed_altitude_i", model->high_speed_altitude_i },
+            { "high_speed_altitude_d", model->high_speed_altitude_d },
+            { "altitude_limit_threshold_low", model->altitude_limit_threshold_low },
+            { "altitude_limit_threshold_high", model->altitude_limit_threshold_high },
+        } },
+        { "steering",{
+            { "return_pitch_limit", steering->return_pitch_limit },
+            { "return_roll_limit", steering->return_roll_limit },
+            { "air_steering",{
+                { "referenceMaxSpeedKPH", steering->air_steering.referenceMaxSpeedKPH },
+                { "referenceMinSpeedKPH", steering->air_steering.referenceMinSpeedKPH },
+                { "acceleration_smoothing", steering->air_steering.acceleration_smoothing },
+                { "max_steering_angle", steering->air_steering.max_steering_angle },
+                { "pitch_return", steering->air_steering.pitch_return },
+                { "roll_return", steering->air_steering.roll_return },
+                { "rollAxisTiming",{
+                    { "timeToMaxInputAtMinSpeed_s", steering->air_steering.rollAxisTiming.timeToMaxInputAtMinSpeed_s },
+                    { "timeToMaxInputAtMaxSpeed_s", steering->air_steering.rollAxisTiming.timeToMaxInputAtMaxSpeed_s },
+                    { "centeringInputTimeFactor", steering->air_steering.rollAxisTiming.centeringInputTimeFactor },
+                    { "counterInputTimeFactor", steering->air_steering.rollAxisTiming.counterInputTimeFactor },
+                } },
+                { "pitchAxisTiming",{
+                    { "timeToMaxInputAtMinSpeed_s", steering->air_steering.pitchAxisTiming.timeToMaxInputAtMinSpeed_s },
+                    { "timeToMaxInputAtMaxSpeed_s", steering->air_steering.pitchAxisTiming.timeToMaxInputAtMaxSpeed_s },
+                    { "centeringInputTimeFactor", steering->air_steering.pitchAxisTiming.centeringInputTimeFactor },
+                    { "counterInputTimeFactor", steering->air_steering.pitchAxisTiming.counterInputTimeFactor },
+                } },
+                { "yawAxisTiming",{
+                    { "timeToMaxInputAtMinSpeed_s", steering->air_steering.yawAxisTiming.timeToMaxInputAtMinSpeed_s },
+                    { "timeToMaxInputAtMaxSpeed_s", steering->air_steering.yawAxisTiming.timeToMaxInputAtMaxSpeed_s },
+                    { "centeringInputTimeFactor", steering->air_steering.yawAxisTiming.centeringInputTimeFactor },
+                    { "counterInputTimeFactor", steering->air_steering.yawAxisTiming.counterInputTimeFactor },
+                } },
+            } }
+        } },
+    };
+
+    return settings_json;
+}
+
+void HelicopterSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json) {
+
+}
+
+void DoHelicopterHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
     auto pfxHelicopter = static_cast<jc3::CPfxHelicopter*>(pfxVehicle);
 
     using json = nlohmann::json;

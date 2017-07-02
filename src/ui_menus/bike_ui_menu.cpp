@@ -7,7 +7,15 @@
 
 #include <jc3/hashes/vehicles.h>
 
-void DoMotorBikeHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
+nlohmann::json BikeSettingsToJson(boost::shared_ptr<jc3::CVehicle> vehicle) {
+    return nlohmann::json();
+}
+
+void BikeSettingsFromJson(boost::shared_ptr<jc3::CVehicle> vehicle, nlohmann::json settings_json) {
+
+}
+
+void DoMotorBikeHandlingUI(boost::shared_ptr<jc3::CVehicle> real_vehicle, jc3::CPfxVehicle *pfxVehicle) {
 	auto pfxBike = static_cast<jc3::CPfxMotorBike*>(pfxVehicle);
 
 	using json = nlohmann::json;
@@ -32,17 +40,17 @@ void DoMotorBikeHandlingUI(jc3::CVehicle *real_vehicle, jc3::CPfxVehicle *pfxVeh
 
     ImGui::DragFloat("Top Speed", (float*)((char*)pfxVehicle + 0x3EC));
 
-    ImGui::DragFloat("Drag Coefficient", &real_vehicle->DragCoefficient);
-    ImGui::DragFloat("Mass", &real_vehicle->Mass);
-    ImGui::DragFloat("Linear Damping", &real_vehicle->LinearDamping);
-    ImGui::DragFloat("Angular Damping", &real_vehicle->AngularDamping);
-    ImGui::SliderFloat("Gravity Factor", &real_vehicle->GravityFactor, -128, 128);
+    ImGui::DragFloat("Drag Coefficient", &real_vehicle->dragCoefficient);
+    ImGui::DragFloat("Mass", &real_vehicle->mass);
+    ImGui::DragFloat("Linear Damping", &real_vehicle->linearDamping);
+    ImGui::DragFloat("Angular Damping", &real_vehicle->angularDamping);
+    ImGui::SliderFloat("Gravity Factor", &real_vehicle->gravityFactor, -128, 128);
 
     ImGui::Separator();
 
     if (ImGui::CollapsingHeader("Gravity Modifiers")) {
         ImGui::TreePush("Gravity Modifiers");
-        ImGui::DragFloat("Gravity Grounded", &pfxBike->someGravityModifiers->gravityMultiplierGrounded);
+        //ImGui::DragFloat("Gravity Grounded", &pfxBike->someGravityModifiers->gravityMultiplierGrounded);
         ImGui::TreePop();
     }
 
